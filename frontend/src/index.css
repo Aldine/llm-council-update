@@ -2,34 +2,34 @@
 
 /* Tailwind v4 theme configuration */
 @theme {
-  /* Dark + Moody - Paper Heart Design Co. theme */
-  --color-background: oklch(13% 0.03 195);      /* Deep Dark Teal */
-  --color-foreground: oklch(96% 0.01 300);      /* Soft White */
+  /* Vibrant Gradient - Hot Pink to Purple to Cyan */
+  --color-background: oklch(25% 0.15 285);      /* Deep Purple (middle of gradient) */
+  --color-foreground: oklch(98% 0.01 0);        /* Bright White */
   
-  --color-card: oklch(18% 0.03 195);            /* Slightly lighter teal */
-  --color-card-foreground: oklch(96% 0.01 300);
+  --color-card: oklch(30% 0.18 285);            /* Slightly lighter purple */
+  --color-card-foreground: oklch(98% 0.01 0);
   
-  --color-popover: oklch(18% 0.03 195);
-  --color-popover-foreground: oklch(96% 0.01 300);
+  --color-popover: oklch(30% 0.18 285);
+  --color-popover-foreground: oklch(98% 0.01 0);
   
-  --color-primary: oklch(55% 0.25 325);         /* Moody Pink/Magenta */
+  --color-primary: oklch(65% 0.30 330);         /* Hot Pink/Magenta (left side) */
   --color-primary-foreground: oklch(100% 0 0);
   
-  --color-secondary: oklch(35% 0.05 185);       /* Muted Blue/Teal */
-  --color-secondary-foreground: oklch(90% 0.01 185);
+  --color-secondary: oklch(60% 0.20 265);       /* Purple-Magenta blend */
+  --color-secondary-foreground: oklch(98% 0.01 0);
   
-  --color-muted: oklch(25% 0.03 195);
-  --color-muted-foreground: oklch(65% 0.01 195);
+  --color-muted: oklch(35% 0.12 285);
+  --color-muted-foreground: oklch(75% 0.05 285);
   
-  --color-accent: oklch(45% 0.08 185);          /* Blue/Teal Accent */
-  --color-accent-foreground: oklch(100% 0 0);
+  --color-accent: oklch(70% 0.18 200);          /* Cyan/Turquoise (right side) */
+  --color-accent-foreground: oklch(20% 0.1 285);
   
-  --color-destructive: oklch(50% 0.15 0);
+  --color-destructive: oklch(55% 0.22 25);
   --color-destructive-foreground: oklch(98% 0 0);
   
-  --color-border: oklch(25% 0.03 195);
-  --color-input: oklch(25% 0.03 195);
-  --color-ring: oklch(55% 0.25 325);            /* Pink ring */
+  --color-border: oklch(40% 0.15 285);
+  --color-input: oklch(35% 0.12 285);
+  --color-ring: oklch(65% 0.30 330);            /* Hot pink ring */
   
   --radius: 0.5rem;
 }
