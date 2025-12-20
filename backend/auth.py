@@ -21,10 +21,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # Mock user database (replace with real DB in production)
+# Pre-hashed password for "demo123" to avoid runtime hashing issues
 MOCK_USERS = {
     "demo@llmcouncil.com": {
         "email": "demo@llmcouncil.com",
-        "hashed_password": pwd_context.hash("demo123"),
+        "hashed_password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5lW7FkTOV.K5W",  # demo123
         "id": "user_001",
         "name": "Demo User"
     }
