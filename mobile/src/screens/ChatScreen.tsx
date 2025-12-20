@@ -9,9 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConversation } from '../context/ConversationContext';
+import { useAuth } from '../context/AuthContext';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import MessageBubble from '../components/MessageBubble';
 import ErrorBanner from '../components/ErrorBanner';
@@ -27,6 +29,7 @@ export default function ChatScreen() {
     createNewConversation,
     clearError,
   } = useConversation();
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     // Create initial conversation if none exists
@@ -53,6 +56,17 @@ export default function ChatScreen() {
     setInputText('');
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Logout', style: 'destructive', onPress: logout },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
@@ -62,14 +76,28 @@ export default function ChatScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>LLM Council</Text>
-          <TouchableOpacity
-            style={styles.newChatButton}
-            onPress={handleNewChat}
-            disabled={isLoading}
-          >
-            <Text style={styles.newChatText}>New Chat</Text>
-          </TouchableOpacity>
+          <View>
+            <Text style={styles.headerTitle}>LLM Council</Text>
+            {user && (
+              <Text style={styles.headerSubtitle}>{user.email}</Text>
+            )}
+          </View>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.newChatButton}
+              onPress={handleNewChat}
+              disabled={isLoading}
+            >
+              <Text style={styles.newChatText}>New</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+              disabled={isLoading}
+            >
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Error Banner */}
@@ -154,6 +182,15 @@ const styles = StyleSheet.create({
     ...Typography.h2,
     color: Colors.foreground,
   },
+  headerSubtitle: {
+    ...Typography.tiny,
+    color: Colors.mutedForeground,
+    marginTop: Spacing.xs / 2,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
   newChatButton: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
@@ -163,6 +200,17 @@ const styles = StyleSheet.create({
   newChatText: {
     ...Typography.small,
     color: Colors.primaryForeground,
+    fontWeight: '600',
+  },
+  logoutButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.secondary,
+    borderRadius: BorderRadius.md,
+  },
+  logoutText: {
+    ...Typography.small,
+    color: Colors.secondaryForeground,
     fontWeight: '600',
   },
   messagesContainer: {

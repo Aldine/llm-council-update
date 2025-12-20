@@ -1,16 +1,23 @@
 """FastAPI backend for LLM Council."""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import uuid
 import json
 import asyncio
 
 from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
+from .auth import (
+    authenticate_user, 
+    get_current_user, 
+    create_access_token, 
+    create_refresh_token,
+    decode_token
+)
 
 app = FastAPI(title="LLM Council API")
 
@@ -55,20 +62,111 @@ class Conversation(BaseModel):
     messages: List[Dict[str, Any]]
 
 
+class LoginRequest(BaseModel):
+    """Login request with email and password."""
+    email: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    """Token response with access and refresh tokens."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    user: Dict[str, str]
+
+
+class RefreshRequest(BaseModel):
+    """Refresh token request."""
+    refresh_token: str
+
+
 @app.get("/")
 async def root():
     """Health check endpoint."""
     return {"status": "ok", "service": "LLM Council API"}
 
 
+@app.post("/api/auth/login", response_model=TokenResponse)
+async def login(request: LoginRequest):
+    """Authenticate user and return tokens."""
+    user = authenticate_user(request.email, request.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect email or password"
+        )
+    
+    access_token = create_access_token(data={"sub": user["email"]})
+    refresh_token = create_refresh_token(data={"sub": user["email"]})
+    
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user={
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"]
+        }
+    )
+
+
+@app.post("/api/auth/refresh", response_model=TokenResponse)
+async def refresh_token(request: RefreshRequest):
+    """Refresh access token using refresh token."""
+    try:
+        payload = decode_token(request.refresh_token)
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        from .auth import MOCK_USERS
+        user = MOCK_USERS.get(email)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        access_token = create_access_token(data={"sub": email})
+        new_refresh_token = create_refresh_token(data={"sub": email})
+        
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            user={
+                "id": user["id"],
+                "email": user["email"],
+                "name": user["name"]
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+
+@app.post("/api/auth/logout")
+async def logout(current_user: dict = Depends(get_current_user)):
+    """Logout endpoint (client must clear tokens)."""
+    return {"message": "Logged out successfully"}
+
+
+@app.get("/api/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    """Get current user info."""
+    return current_user
+
+
 @app.get("/api/conversations", response_model=List[ConversationMetadata])
-async def list_conversations():
+async def list_conversations(current_user: dict = Depends(get_current_user)):
     """List all conversations (metadata only)."""
     return storage.list_conversations()
 
 
 @app.post("/api/conversations", response_model=Conversation)
-async def create_conversation(request: CreateConversationRequest):
+async def create_conversation(
+    request: CreateConversationRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Create a new conversation."""
     conversation_id = str(uuid.uuid4())
     conversation = storage.create_conversation(conversation_id)
@@ -76,7 +174,10 @@ async def create_conversation(request: CreateConversationRequest):
 
 
 @app.get("/api/conversations/{conversation_id}", response_model=Conversation)
-async def get_conversation(conversation_id: str):
+async def get_conversation(
+    conversation_id: str,
+    current_user: dict = Depends(get_current_user)
+):
     """Get a specific conversation with all its messages."""
     conversation = storage.get_conversation(conversation_id)
     if conversation is None:
@@ -85,7 +186,11 @@ async def get_conversation(conversation_id: str):
 
 
 @app.post("/api/conversations/{conversation_id}/message")
-async def send_message(conversation_id: str, request: SendMessageRequest):
+async def send_message(
+    conversation_id: str, 
+    request: SendMessageRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Send a message and run the 3-stage council process.
     Returns the complete response with all stages.
@@ -129,7 +234,11 @@ async def send_message(conversation_id: str, request: SendMessageRequest):
 
 
 @app.post("/api/conversations/{conversation_id}/message/stream")
-async def send_message_stream(conversation_id: str, request: SendMessageRequest):
+async def send_message_stream(
+    conversation_id: str, 
+    request: SendMessageRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Send a message and stream the 3-stage council process.
     Returns Server-Sent Events as each stage completes.
