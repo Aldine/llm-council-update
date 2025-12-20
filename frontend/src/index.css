@@ -2,34 +2,34 @@
 
 /* Tailwind v4 theme configuration */
 @theme {
-  /* Young Passion - Vibrant coral to magenta gradient */
-  --color-background: oklch(45% 0.15 15);       /* Deep warm base (#b12a5b) */
+  /* Rainy Ashville - Soft pink to blue gradient (#fbc2eb to #a6c1ee) */
+  --color-background: oklch(35% 0.06 270);      /* Deep soft blue-purple base */
   --color-foreground: oklch(98% 0.01 0);        /* Bright White */
   
-  --color-card: oklch(55% 0.18 10);             /* Rich rose (#cf556c) */
-  --color-card-foreground: oklch(98% 0.01 0);
+  --color-card: oklch(80% 0.08 250);            /* Light lavender-blue (#a6c1ee) */
+  --color-card-foreground: oklch(30% 0.06 270);
   
-  --color-popover: oklch(55% 0.18 10);
-  --color-popover-foreground: oklch(98% 0.01 0);
+  --color-popover: oklch(80% 0.08 250);
+  --color-popover-foreground: oklch(30% 0.06 270);
   
-  --color-primary: oklch(70% 0.20 25);          /* Coral pink (#ff8177) */
-  --color-primary-foreground: oklch(100% 0 0);
+  --color-primary: oklch(88% 0.08 330);         /* Soft pink (#fbc2eb) */
+  --color-primary-foreground: oklch(30% 0.06 270);
   
-  --color-secondary: oklch(72% 0.18 20);        /* Light coral (#ff867a) */
-  --color-secondary-foreground: oklch(20% 0.08 15);
+  --color-secondary: oklch(75% 0.09 260);       /* Mid lavender-blue */
+  --color-secondary-foreground: oklch(30% 0.06 270);
   
-  --color-muted: oklch(52% 0.15 15);
-  --color-muted-foreground: oklch(80% 0.05 20);
+  --color-muted: oklch(45% 0.06 270);
+  --color-muted-foreground: oklch(78% 0.05 270);
   
-  --color-accent: oklch(75% 0.19 22);           /* Peachy coral (#ff8c7f) */
-  --color-accent-foreground: oklch(20% 0.08 15);
+  --color-accent: oklch(82% 0.07 280);          /* Soft periwinkle accent */
+  --color-accent-foreground: oklch(30% 0.06 270);
   
   --color-destructive: oklch(55% 0.22 25);
   --color-destructive-foreground: oklch(98% 0 0);
   
-  --color-border: oklch(58% 0.16 12);
-  --color-input: oklch(52% 0.15 15);
-  --color-ring: oklch(70% 0.20 25);             /* Coral ring */
+  --color-border: oklch(50% 0.07 270);
+  --color-input: oklch(45% 0.06 270);
+  --color-ring: oklch(88% 0.08 330);            /* Soft pink ring */
   
   --radius: 0.5rem;
 }
