@@ -117,3 +117,22 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         "email": user["email"],
         "name": user["name"]
     }
+
+
+async def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
+) -> Optional[dict]:
+    """Dependency to optionally get the current authenticated user.
+    Returns None if no auth is provided (for web app compatibility).
+    Returns user dict if valid auth is provided (for mobile app).
+    Raises 401 if invalid auth is provided.
+    """
+    if credentials is None:
+        return None
+    
+    try:
+        return await get_current_user(credentials)
+    except HTTPException:
+        # Re-raise auth errors if credentials were provided
+        raise
+

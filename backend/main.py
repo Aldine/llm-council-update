@@ -13,7 +13,8 @@ from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
 from .auth import (
     authenticate_user, 
-    get_current_user, 
+    get_current_user,
+    get_optional_user,
     create_access_token, 
     create_refresh_token,
     decode_token
@@ -157,17 +158,21 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 
 @app.get("/api/conversations", response_model=List[ConversationMetadata])
-async def list_conversations(current_user: dict = Depends(get_current_user)):
-    """List all conversations (metadata only)."""
+async def list_conversations(current_user: Optional[dict] = Depends(get_optional_user)):
+    """List all conversations (metadata only).
+    Works with or without authentication for web/mobile compatibility.
+    """
     return storage.list_conversations()
 
 
 @app.post("/api/conversations", response_model=Conversation)
 async def create_conversation(
     request: CreateConversationRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_optional_user)
 ):
-    """Create a new conversation."""
+    """Create a new conversation.
+    Works with or without authentication for web/mobile compatibility.
+    """
     conversation_id = str(uuid.uuid4())
     conversation = storage.create_conversation(conversation_id)
     return conversation
@@ -176,9 +181,11 @@ async def create_conversation(
 @app.get("/api/conversations/{conversation_id}", response_model=Conversation)
 async def get_conversation(
     conversation_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_optional_user)
 ):
-    """Get a specific conversation with all its messages."""
+    """Get a specific conversation with all its messages.
+    Works with or without authentication for web/mobile compatibility.
+    """
     conversation = storage.get_conversation(conversation_id)
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -189,11 +196,12 @@ async def get_conversation(
 async def send_message(
     conversation_id: str, 
     request: SendMessageRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_optional_user)
 ):
     """
     Send a message and run the 3-stage council process.
     Returns the complete response with all stages.
+    Works with or without authentication for web/mobile compatibility.
     """
     # Check if conversation exists
     conversation = storage.get_conversation(conversation_id)
@@ -237,11 +245,12 @@ async def send_message(
 async def send_message_stream(
     conversation_id: str, 
     request: SendMessageRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_optional_user)
 ):
     """
     Send a message and stream the 3-stage council process.
     Returns Server-Sent Events as each stage completes.
+    Works with or without authentication for web/mobile compatibility.
     """
     # Check if conversation exists
     conversation = storage.get_conversation(conversation_id)
