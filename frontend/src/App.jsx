@@ -1,26 +1,15 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
+import TopNav from './components/TopNav';
 import ChatInterface from './components/ChatInterface';
 import { api } from './api';
-import './App.css';
 
 function App() {
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Load conversations on mount
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
-  // Load conversation details when selected
-  useEffect(() => {
-    if (currentConversationId) {
-      loadConversation(currentConversationId);
-    }
-  }, [currentConversationId]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const loadConversations = async () => {
     try {
@@ -40,6 +29,18 @@ function App() {
     }
   };
 
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  // Load conversation details when selected
+  useEffect(() => {
+    if (currentConversationId) {
+      loadConversation(currentConversationId);
+    }
+  }, [currentConversationId]);
+
   const handleNewConversation = async () => {
     try {
       const newConv = await api.createConversation();
@@ -55,6 +56,7 @@ function App() {
 
   const handleSelectConversation = (id) => {
     setCurrentConversationId(id);
+    setMobileMenuOpen(false);
   };
 
   const handleSendMessage = async (content) => {
@@ -182,18 +184,27 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <Sidebar
-        conversations={conversations}
-        currentConversationId={currentConversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
-      />
-      <ChatInterface
-        conversation={currentConversation}
-        onSendMessage={handleSendMessage}
-        isLoading={isLoading}
-      />
+    <div className="min-h-screen bg-background font-sans antialiased">
+      <TopNav onToggleSidebar={() => setMobileMenuOpen(!mobileMenuOpen)} />
+      <div className="flex relative">
+        <Sidebar
+          conversations={conversations}
+          currentConversationId={currentConversationId}
+          onSelectConversation={handleSelectConversation}
+          onNewConversation={handleNewConversation}
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+        <main className="flex-1 min-w-0">
+          <ChatInterface
+            conversation={currentConversation}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+          />
+        </main>
+      </div>
+
+      {/* Status Indicator - Fixed Bottom Right */}
     </div>
   );
 }

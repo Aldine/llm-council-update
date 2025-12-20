@@ -3,7 +3,6 @@ import ReactMarkdown from 'react-markdown';
 import Stage1 from './Stage1';
 import Stage2 from './Stage2';
 import Stage3 from './Stage3';
-import './ChatInterface.css';
 
 export default function ChatInterface({
   conversation,
@@ -39,53 +38,60 @@ export default function ChatInterface({
 
   if (!conversation) {
     return (
-      <div className="chat-interface">
-        <div className="empty-state">
-          <h2>Welcome to LLM Council</h2>
-          <p>Create a new conversation to get started</p>
+      <div className="flex-1 flex items-center justify-center h-full bg-background">
+        <div className="text-center space-y-4 max-w-md px-6">
+          <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-8 h-8 bg-accent rounded-sm animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-medium tracking-tight">Welcome to LLM Council</h2>
+          <p className="text-muted-foreground">Create a new session to begin the deliberation process.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="chat-interface">
-      <div className="messages-container">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] bg-background">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8">
         {conversation.messages.length === 0 ? (
-          <div className="empty-state">
-            <h2>Start a conversation</h2>
-            <p>Ask a question to consult the LLM Council</p>
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
+            <h2 className="text-xl font-medium">Start a conversation</h2>
+            <p className="text-sm text-muted-foreground">Ask a question to consult the LLM Council</p>
           </div>
         ) : (
           conversation.messages.map((msg, index) => (
-            <div key={index} className="message-group">
+            <div key={index} className="max-w-4xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
               {msg.role === 'user' ? (
-                <div className="user-message">
-                  <div className="message-label">You</div>
-                  <div className="message-content">
+                <div className="flex justify-end mb-8">
+                  <div className="bg-primary text-primary-foreground px-5 py-3 rounded-sm max-w-[80%] shadow-sm">
                     <div className="markdown-content">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="assistant-message">
-                  <div className="message-label">LLM Council</div>
+                <div className="space-y-6 mb-12">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-6 h-6 rounded-sm bg-accent flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-accent-foreground">AI</span>
+                    </div>
+                    <span className="text-sm font-medium tracking-wide uppercase text-muted-foreground">Council Deliberation</span>
+                  </div>
 
                   {/* Stage 1 */}
                   {msg.loading?.stage1 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
-                      <span>Running Stage 1: Collecting individual responses...</span>
+                    <div className="flex items-center gap-3 p-4 border border-border rounded-sm bg-card/50 animate-pulse">
+                      <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-muted-foreground">Stage 1: Collecting individual responses...</span>
                     </div>
                   )}
                   {msg.stage1 && <Stage1 responses={msg.stage1} />}
 
                   {/* Stage 2 */}
                   {msg.loading?.stage2 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
-                      <span>Running Stage 2: Peer rankings...</span>
+                    <div className="flex items-center gap-3 p-4 border border-border rounded-sm bg-card/50 animate-pulse">
+                      <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-muted-foreground">Stage 2: Peer rankings in progress...</span>
                     </div>
                   )}
                   {msg.stage2 && (
@@ -98,9 +104,9 @@ export default function ChatInterface({
 
                   {/* Stage 3 */}
                   {msg.loading?.stage3 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
-                      <span>Running Stage 3: Final synthesis...</span>
+                    <div className="flex items-center gap-3 p-4 border border-border rounded-sm bg-card/50 animate-pulse">
+                      <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-muted-foreground">Stage 3: Synthesizing final answer...</span>
                     </div>
                   )}
                   {msg.stage3 && <Stage3 finalResponse={msg.stage3} />}
@@ -109,37 +115,39 @@ export default function ChatInterface({
             </div>
           ))
         )}
-
-        {isLoading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
-            <span>Consulting the council...</span>
-          </div>
-        )}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {conversation.messages.length === 0 && (
-        <form className="input-form" onSubmit={handleSubmit}>
-          <textarea
-            className="message-input"
-            placeholder="Ask your question... (Shift+Enter for new line, Enter to send)"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            rows={3}
-          />
-          <button
-            type="submit"
-            className="send-button"
-            disabled={!input.trim() || isLoading}
-          >
-            Send
-          </button>
-        </form>
-      )}
+      <div className="p-6 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-4xl mx-auto relative">
+          <form onSubmit={handleSubmit} className="relative">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask the council..."
+              className="w-full min-h-[60px] max-h-[200px] p-4 pr-12 bg-card border border-border rounded-sm focus:outline-none focus:ring-1 focus:ring-ring focus:border-accent resize-none text-sm shadow-sm transition-colors"
+              disabled={isLoading}
+              rows={1}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className="absolute right-3 bottom-3 p-2 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </form>
+          <div className="text-center mt-2">
+            <span className="text-[10px] text-muted-foreground">
+              AI Council can make mistakes. Verify important information.
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
