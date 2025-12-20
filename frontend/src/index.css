@@ -2,34 +2,34 @@
 
 /* Tailwind v4 theme configuration */
 @theme {
-  /* Monochrome Beach - Sophisticated charcoal, teal, white, navy palette */
-  --color-background: oklch(25% 0.02 240);      /* Deep charcoal with subtle blue */
-  --color-foreground: oklch(98% 0.01 0);        /* Pure white */
+  /* Industrial Metallic - Steel grays and charcoal */
+  --color-background: oklch(20% 0.01 240);      /* Deep charcoal #1F262A */
+  --color-foreground: oklch(92% 0.01 240);      /* Light metallic text */
   
-  --color-card: oklch(45% 0.06 200);            /* Rich teal (#5A8C8C approximate) */
-  --color-card-foreground: oklch(98% 0.01 0);
+  --color-card: oklch(57% 0.02 220);            /* Steel blue-gray #4A5C68 */
+  --color-card-foreground: oklch(92% 0.01 240);
   
-  --color-popover: oklch(45% 0.06 200);
-  --color-popover-foreground: oklch(98% 0.01 0);
+  --color-popover: oklch(25% 0.01 240);
+  --color-popover-foreground: oklch(92% 0.01 240);
   
-  --color-primary: oklch(55% 0.08 195);         /* Vibrant teal accent */
-  --color-primary-foreground: oklch(100% 0 0);
+  --color-primary: oklch(65% 0.02 240);         /* Medium slate gray #546E7A */
+  --color-primary-foreground: oklch(95% 0.01 240);
   
-  --color-secondary: oklch(30% 0.04 220);       /* Deep navy blue */
-  --color-secondary-foreground: oklch(98% 0.01 0);
+  --color-secondary: oklch(50% 0.01 240);       /* Dark slate #2A3439 */
+  --color-secondary-foreground: oklch(92% 0.01 240);
   
-  --color-muted: oklch(35% 0.03 240);
-  --color-muted-foreground: oklch(75% 0.02 240);
+  --color-muted: oklch(40% 0.01 240);
+  --color-muted-foreground: oklch(75% 0.01 240);
   
-  --color-accent: oklch(92% 0.01 0);            /* Soft white/light gray */
-  --color-accent-foreground: oklch(25% 0.02 240);
+  --color-accent: oklch(75% 0.01 240);          /* Light silver-gray #AAB0AD */
+  --color-accent-foreground: oklch(20% 0.01 240);
   
   --color-destructive: oklch(55% 0.22 25);
   --color-destructive-foreground: oklch(98% 0 0);
   
-  --color-border: oklch(40% 0.04 200);
-  --color-input: oklch(35% 0.03 240);
-  --color-ring: oklch(55% 0.08 195);            /* Teal ring */
+  --color-border: oklch(45% 0.01 240);
+  --color-input: oklch(45% 0.05 300);
+  --color-ring: oklch(88% 0.08 330);            /* Soft pink ring */
   
   --radius: 0.5rem;
 }
