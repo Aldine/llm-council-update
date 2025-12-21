@@ -2,8 +2,30 @@
 
 from typing import List, Dict, Any, Tuple
 from crewai import Agent, Task, Crew, Process
-from .config import COUNCIL_MODELS, CHAIRMAN_MODEL, OPENROUTER_API_KEY
+from crewai import LLM
+from .config import COUNCIL_MODELS, CHAIRMAN_MODEL, OPENROUTER_API_KEY, OPENROUTER_API_URL
 import os
+
+
+def create_openrouter_llm(model: str) -> LLM:
+    """
+    Create a CrewAI LLM instance configured for OpenRouter.
+    
+    Args:
+        model: OpenRouter model identifier (e.g., "openai/gpt-4o")
+        
+    Returns:
+        LLM instance configured for OpenRouter
+    """
+    # Set environment variable for LiteLLM to use OpenRouter
+    os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
+    
+    # LiteLLM format: openrouter/provider/model
+    # OpenRouter model format: provider/model
+    return LLM(
+        model=f"openrouter/{model}",
+        temperature=0.7,
+    )
 
 
 def create_council_agents() -> List[Agent]:
@@ -40,15 +62,13 @@ def create_council_agents() -> List[Agent]:
     
     for i, config in enumerate(roles[:len(COUNCIL_MODELS)]):
         # Use OpenRouter LLM for each agent
+        llm = create_openrouter_llm(COUNCIL_MODELS[i])
+        
         agent = Agent(
             role=config["role"],
             goal=config["goal"],
             backstory=config["backstory"],
-            llm_config={
-                "provider": "openrouter",
-                "model": COUNCIL_MODELS[i],
-                "api_key": OPENROUTER_API_KEY,
-            },
+            llm=llm,
             verbose=True,
             allow_delegation=False,
         )
@@ -64,6 +84,8 @@ def create_chairman_agent() -> Agent:
     Returns:
         CrewAI Agent object for the chairman
     """
+    llm = create_openrouter_llm(CHAIRMAN_MODEL)
+    
     return Agent(
         role="Council Chairman",
         goal="Synthesize collective wisdom into a definitive answer",
@@ -72,11 +94,7 @@ def create_chairman_agent() -> Agent:
         2. Identify areas of consensus and disagreement
         3. Synthesize a comprehensive, balanced final answer
         4. Ensure the response is clear, accurate, and actionable""",
-        llm_config={
-            "provider": "openrouter",
-            "model": CHAIRMAN_MODEL,
-            "api_key": OPENROUTER_API_KEY,
-        },
+        llm=llm,
         verbose=True,
         allow_delegation=True,
     )
