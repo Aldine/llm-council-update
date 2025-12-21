@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './components/Login';
 import Sidebar from './components/Sidebar';
 import TopNav from './components/TopNav';
 import ChatInterface from './components/ChatInterface';
+import History from './components/History';
+import Settings from './components/Settings';
 import { api } from './api';
 
-function App() {
+// Toggle between JWT and BFF auth modes
+const USE_BFF_AUTH = false; // Set to true to use BFF OAuth instead of JWT
+
+function AppContent() {
+  const { state, user, logout } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentView, setCurrentView] = useState('deliberation'); // 'deliberation', 'history', 'settings'
 
   const loadConversations = async () => {
     try {
@@ -29,17 +38,45 @@ function App() {
     }
   };
 
-  // Load conversations on mount
+  // Load conversations on mount (only when authenticated)
   useEffect(() => {
-    loadConversations();
-  }, []);
+    if (state === 'AUTHENTICATED') {
+      loadConversations();
+    }
+  }, [state]);
 
   // Load conversation details when selected
   useEffect(() => {
-    if (currentConversationId) {
+    if (currentConversationId && state === 'AUTHENTICATED') {
       loadConversation(currentConversationId);
     }
-  }, [currentConversationId]);
+  }, [currentConversationId, state]);
+
+  // Show loading spinner during initialization
+  if (state === 'INITIALIZING') {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: 'var(--background)',
+        color: 'var(--primary)',
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  // Show login screen if not authenticated
+  if (state === 'UNAUTHENTICATED' || state === 'AUTHENTICATING' || state === 'ERROR') {
+    // Redirect to BFF OAuth if enabled
+    if (USE_BFF_AUTH && state === 'UNAUTHENTICATED') {
+      window.location.href = 'http://localhost:8001/bff/auth/login';
+      return <div style={{ padding: '40px', textAlign: 'center' }}>Redirecting to OAuth login...</div>;
+    }
+    return <Login />;
+  }
 
   const handleNewConversation = async () => {
     try {
@@ -56,6 +93,7 @@ function App() {
 
   const handleSelectConversation = (id) => {
     setCurrentConversationId(id);
+    setCurrentView('deliberation'); // Switch to deliberation view when selecting a conversation
     setMobileMenuOpen(false);
   };
 
@@ -194,18 +232,45 @@ function App() {
           onNewConversation={handleNewConversation}
           isOpen={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
+          currentView={currentView}
+          onViewChange={(view) => {
+            setCurrentView(view);
+            setMobileMenuOpen(false);
+          }}
+          user={user}
+          onLogout={logout}
         />
         <main className="flex-1 min-w-0">
-          <ChatInterface
-            conversation={currentConversation}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-          />
+          {currentView === 'deliberation' && (
+            <ChatInterface
+              conversation={currentConversation}
+              onSendMessage={handleSendMessage}
+              isLoading={isLoading}
+            />
+          )}
+          {currentView === 'history' && (
+            <History
+              conversations={conversations}
+              onSelectConversation={handleSelectConversation}
+              currentConversationId={currentConversationId}
+            />
+          )}
+          {currentView === 'settings' && (
+            <Settings />
+          )}
         </main>
       </div>
 
       {/* Status Indicator - Fixed Bottom Right */}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

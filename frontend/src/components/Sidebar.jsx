@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function Sidebar({
   conversations,
@@ -6,8 +6,25 @@ export default function Sidebar({
   onSelectConversation,
   onNewConversation,
   isOpen,
-  onClose
+  onClose,
+  currentView = 'deliberation',
+  onViewChange,
+  user,
+  onLogout
 }) {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user) return 'US';
+    if (user.name) {
+      const names = user.name.split(' ');
+      return names.length > 1 
+        ? `${names[0][0]}${names[1][0]}`.toUpperCase()
+        : names[0].substring(0, 2).toUpperCase();
+    }
+    return user.email ? user.email.substring(0, 2).toUpperCase() : 'US';
+  };
   return (
     <>
       {/* Mobile Overlay */}
@@ -79,25 +96,114 @@ export default function Sidebar({
         
         <div className="p-4 border-t border-border mt-auto">
           <nav className="flex flex-col gap-1 mb-4">
-            <a href="#" className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-foreground bg-accent/10 rounded-sm transition-colors">
+            <button 
+              onClick={() => onViewChange('deliberation')}
+              className={`flex items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-sm transition-colors ${
+                currentView === 'deliberation'
+                  ? 'text-foreground bg-accent/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
               <span>Deliberation</span>
-            </a>
-            <a href="#" className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-sm transition-colors">
+            </button>
+            <button 
+              onClick={() => onViewChange('history')}
+              className={`flex items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-sm transition-colors ${
+                currentView === 'history'
+                  ? 'text-foreground bg-accent/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               <span>History</span>
-            </a>
-            <a href="#" className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-sm transition-colors">
+            </button>
+            <button 
+              onClick={() => onViewChange('settings')}
+              className={`flex items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-sm transition-colors ${
+                currentView === 'settings'
+                  ? 'text-foreground bg-accent/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
               <span>Settings</span>
-            </a>
+            </button>
           </nav>
 
-          <div className="flex items-center gap-3 px-2 pt-4 border-t border-border">
-            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-              US
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">User</span>
-              <span className="text-xs text-muted-foreground">Pro Plan</span>
-            </div>
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="w-full flex items-center gap-3 px-2 pt-4 border-t border-border hover:bg-accent/50 rounded-sm transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary border border-primary/30">
+                {getUserInitials()}
+              </div>
+              <div className="flex-1 flex flex-col items-start min-w-0">
+                <span className="text-sm font-medium truncate w-full">{user?.name || 'User'}</span>
+                <span className="text-xs text-muted-foreground">Pro Plan</span>
+              </div>
+              <svg className={`w-4 h-4 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* User Menu Dropdown */}
+            {showUserMenu && (
+              <div className="absolute bottom-full left-2 right-2 mb-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
+                <div className="p-3 border-b border-border bg-accent/5">
+                  <div className="font-medium text-sm">{user?.name || 'User'}</div>
+                  <div className="text-xs text-muted-foreground truncate">{user?.email || 'demo@llmcouncil.com'}</div>
+                </div>
+                <div className="p-1">
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      onViewChange('settings');
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent/50 rounded-sm transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Account Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      onViewChange('history');
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent/50 rounded-sm transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    View History
+                  </button>
+                  <div className="my-1 border-t border-border"></div>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      onLogout();
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-sm transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </aside>

@@ -19,8 +19,12 @@ from .auth import (
     create_refresh_token,
     decode_token
 )
+from .bff.routes import router as bff_router
 
 app = FastAPI(title="LLM Council API")
+
+# Mount BFF router (OAuth + session-based auth)
+app.include_router(bff_router)
 
 # Enable CORS for local development
 app.add_middleware(
@@ -84,8 +88,34 @@ class RefreshRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    """Health check endpoint."""
-    return {"status": "ok", "service": "LLM Council API"}
+    """API information and navigation."""
+    return {
+        "service": "LLM Council API",
+        "version": "1.0.0",
+        "status": "ok",
+        "authentication": {
+            "jwt": {
+                "description": "Token-based authentication (localStorage)",
+                "login": "/api/auth/login",
+                "refresh": "/api/auth/refresh",
+                "logout": "/api/auth/logout",
+                "me": "/api/auth/me"
+            },
+            "bff": {
+                "description": "OAuth with server-side sessions (HttpOnly cookies)",
+                "login": "/bff/auth/login",
+                "callback": "/bff/auth/callback",
+                "logout": "/bff/auth/logout",
+                "me": "/bff/me",
+                "mock": "/bff/mock/authorize"
+            }
+        },
+        "docs": "/docs",
+        "frontends": {
+            "main": "http://localhost:5173 (JWT-based)",
+            "bff_demo": "http://localhost:5174 (BFF OAuth demo)"
+        }
+    }
 
 
 @app.post("/api/auth/login", response_model=TokenResponse)

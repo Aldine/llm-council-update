@@ -6,7 +6,7 @@ In production, use Auth0, Clerk, or Supabase.
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
@@ -17,15 +17,14 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # Mock user database (replace with real DB in production)
-# Pre-hashed password for "demo123" to avoid runtime hashing issues
+# Pre-hashed password for "demo123" using bcrypt
 MOCK_USERS = {
     "demo@llmcouncil.com": {
         "email": "demo@llmcouncil.com",
-        "hashed_password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5lW7FkTOV.K5W",  # demo123
+        "hashed_password": "$2b$12$O18SR5v73D9VBeO6aWF52.qdod/y2v7NWLwFHz.8ceao2CkhihkUa",  # demo123
         "id": "user_001",
         "name": "Demo User"
     }
@@ -33,13 +32,13 @@ MOCK_USERS = {
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a password against its hash using bcrypt directly."""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password."""
-    return pwd_context.hash(password)
+    """Hash a password using bcrypt directly."""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

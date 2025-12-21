@@ -1,6 +1,15 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function TopNav({ onToggleSidebar }) {
+  const { state, user, logout } = useAuth();
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+    }
+  };
+
   return (
     <header className="h-14 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-4 md:px-6 sticky top-0 z-50">
       <button 
@@ -17,6 +26,20 @@ export default function TopNav({ onToggleSidebar }) {
         <div className="w-3 h-3 bg-accent rounded-full animate-pulse" />
         <span className="font-semibold tracking-tight text-lg">LLM Council</span>
       </div>
+      
+      {state === 'AUTHENTICATED' && user && (
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground hidden md:inline">
+            {user.email}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 text-sm rounded-md border border-border hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </header>
   );
 }
