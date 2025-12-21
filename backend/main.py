@@ -11,6 +11,7 @@ import asyncio
 
 from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
+from .crew_council import run_crew_council_deliberation
 from .auth import (
     authenticate_user, 
     get_current_user,
@@ -347,6 +348,45 @@ async def send_message_stream(
     )
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+@app.post("/api/conversations/{conversation_id}/message/crew")
+async def send_message_crew(
+    conversation_id: str, 
+    request: SendMessageRequest,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """
+    Send a message and run the CrewAI-powered 3-stage council process.
+    Returns the complete response with all stages using multi-agent orchestration.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    # Check if conversation exists
+    conversation = storage.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Check if this is the first message
+    is_first_message = len(conversation["messages"]) == 0
+
+    # Add user message
+    storage.add_user_message(conversation_id, request.content)
+
+    # If this is the first message, generate a title
+    if is_first_message:
+        title = await generate_conversation_title(request.content)
+        storage.update_conversation_title(conversation_id, title)
+
+    # Run the CrewAI-powered 3-stage council process
+    result = await run_crew_council_deliberation(request.content)
+
+    # Add assistant message with all stages
+    storage.add_assistant_message(
+        conversation_id,
+        result["stage1"],
+        result["stage2"],
+        result["stage3"]
+    )
+
+    # Return the complete response with metadata
+    return result
+
+

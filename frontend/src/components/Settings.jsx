@@ -7,10 +7,20 @@ export default function Settings() {
     return saved ? '••••••••' + saved.slice(-4) : '';
   });
   
+  const [useCrewAI, setUseCrewAI] = useState(() => {
+    return localStorage.getItem('use_crewai') === 'true';
+  });
+  
   const [models] = useState({
     council: ['openai/gpt-4o', 'anthropic/claude-3.5-sonnet', 'google/gemini-pro-1.5'],
     chairman: 'openai/gpt-4o'
   });
+
+  const toggleCrewAI = () => {
+    const newValue = !useCrewAI;
+    setUseCrewAI(newValue);
+    localStorage.setItem('use_crewai', newValue.toString());
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -113,6 +123,25 @@ export default function Settings() {
         </div>
 
         <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 border border-border rounded-sm bg-primary/5">
+            <div>
+              <div className="text-sm font-medium">🤖 Use CrewAI Multi-Agent Orchestration</div>
+              <div className="text-xs text-muted-foreground">
+                Enable CrewAI's advanced agent orchestration system for enhanced deliberation
+              </div>
+            </div>
+            <button 
+              onClick={toggleCrewAI}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                useCrewAI ? 'bg-primary' : 'bg-muted'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                useCrewAI ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
+
           <div className="flex items-center justify-between p-3 border border-border rounded-sm">
             <div>
               <div className="text-sm font-medium">Show Stage Progress</div>

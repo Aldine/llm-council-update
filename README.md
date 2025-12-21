@@ -4,6 +4,8 @@
 
 The idea of this repo is that instead of asking a question to your favorite LLM provider (e.g. OpenAI GPT 5.1, Google Gemini 3.0 Pro, Anthropic Claude Sonnet 4.5, xAI Grok 4, eg.c), you can group them into your "LLM Council". This repo is a simple, local web app that essentially looks like ChatGPT except it uses OpenRouter to send your query to multiple LLMs, it then asks them to review and rank each other's work, and finally a Chairman LLM produces the final response.
 
+**🆕 Now with [CrewAI](https://www.crewai.com/) multi-agent orchestration!** Toggle between standard mode and advanced agent-based deliberation. See [CREWAI_QUICKSTART.md](CREWAI_QUICKSTART.md) for details.
+
 In a bit more detail, here is what happens when you submit a query:
 
 1. **Stage 1: First opinions**. The user query is given to all LLMs individually, and the responses are collected. The individual responses are shown in a "tab view", so that the user can inspect them all one by one.
@@ -79,9 +81,30 @@ npm run dev
 
 Then open http://localhost:5173 in your browser.
 
+## Features
+
+- **Dual Deliberation Modes**
+  - 🚀 **Standard Mode**: Fast parallel execution with direct API calls
+  - 🤖 **CrewAI Mode**: Advanced multi-agent orchestration with role specialization
+  
+- **3-Stage Deliberation Process**
+  1. Individual responses from all council members
+  2. Anonymized peer review and ranking
+  3. Chairman synthesis of final answer
+
+- **Authentication**: JWT + optional BFF OAuth with PKCE
+- **History Management**: Date-grouped conversation browsing
+- **Settings**: API configuration, model selection, preferences
+
+## Documentation
+
+- [CrewAI Integration Quick Start](CREWAI_QUICKSTART.md) - Get started with multi-agent mode
+- [Full CrewAI Documentation](CREWAI_INTEGRATION.md) - Architecture and advanced usage
+- [Architecture Details](CLAUDE.md) - System design and patterns
+
 ## Tech Stack
 
-- **Backend:** FastAPI (Python 3.10+), async httpx, OpenRouter API
-- **Frontend:** React + Vite, react-markdown for rendering
+- **Backend:** FastAPI (Python 3.10+), async httpx, OpenRouter API, CrewAI
+- **Frontend:** React + Vite, Tailwind CSS v4, OKLCH color space
 - **Storage:** JSON files in `data/conversations/`
 - **Package Management:** uv for Python, npm for JavaScript

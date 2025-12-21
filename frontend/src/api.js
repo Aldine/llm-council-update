@@ -67,8 +67,12 @@ export const api = {
    * Send a message in a conversation.
    */
   async sendMessage(conversationId, content) {
+    // Check if CrewAI mode is enabled
+    const useCrewAI = localStorage.getItem('use_crewai') === 'true';
+    const endpoint = useCrewAI ? 'message/crew' : 'message';
+    
     const response = await fetch(
-      `${API_BASE}/api/conversations/${conversationId}/message`,
+      `${API_BASE}/api/conversations/${conversationId}/${endpoint}`,
       {
         method: 'POST',
         headers: getAuthHeaders(),
