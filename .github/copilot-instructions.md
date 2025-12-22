@@ -6,7 +6,7 @@ This is a 3-stage LLM deliberation system where multiple models collaboratively 
 
 **Tech Stack**: FastAPI backend (Python 3.10+, async httpx, OpenRouter API) + React/Vite frontend + JSON file storage
 
-**Critical Ports**: Backend runs on **8001** (not 8000), frontend on 5173
+**Critical Ports**: Backend runs on **8002** (not 8000 or 8001), frontend on 5173
 
 ## Project-Specific Patterns
 
@@ -35,7 +35,7 @@ This is a 3-stage LLM deliberation system where multiple models collaboratively 
 
 **Styling Convention**: All ReactMarkdown components must be wrapped in `<div className="markdown-content">` for proper 12px padding (defined globally in `index.css`). Light mode theme with #4a90e2 primary color.
 
-**API Client** (`api.js`): Hardcoded to `http://localhost:8001`. Update CORS in `backend/main.py` if changing ports (currently allows 5173, 3000).
+**API Client** (`api.js`): Hardcoded to `http://localhost:8002`. Update CORS in `backend/main.py` if changing ports (currently allows 5173, 3000).
 
 ### Development Workflow
 

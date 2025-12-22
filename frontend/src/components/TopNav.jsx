@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import ConfirmModal from './ConfirmModal';
 
 export default function TopNav({ onToggleSidebar }) {
   const { state, user, logout } = useAuth();
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      logout();
-    }
+    setIsLogoutConfirmOpen(true);
   };
 
   return (
@@ -40,6 +40,17 @@ export default function TopNav({ onToggleSidebar }) {
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        onConfirm={logout}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        variant="warning"
+      />
     </header>
   );
 }

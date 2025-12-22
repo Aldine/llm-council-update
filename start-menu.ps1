@@ -12,7 +12,7 @@ function Show-Menu {
     Write-Host "Start EVERYTHING (Backend + Frontend + BFF Demo)"
     
     Write-Host "2. " -NoNewline -ForegroundColor Yellow
-    Write-Host "Start Backend only (Port 8001)"
+    Write-Host "Start Backend only (Port 8002)"
     
     Write-Host "3. " -NoNewline -ForegroundColor Yellow
     Write-Host "Start Frontend only (JWT-based, Port 5173)"
@@ -37,7 +37,7 @@ function Start-AllServices {
     Write-Host "`nStarting all services..." -ForegroundColor Green
     
     # Start backend
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PSScriptRoot'; Write-Host 'Backend starting on port 8001...' -ForegroundColor Green; uv run python -m backend.main" -WindowStyle Normal
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PSScriptRoot'; Write-Host 'Backend starting on port 8002...' -ForegroundColor Green; uv run python -m backend.main" -WindowStyle Normal
     Start-Sleep -Seconds 3
     
     # Start frontend
@@ -48,7 +48,7 @@ function Start-AllServices {
     Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PSScriptRoot\frontend-bff'; Write-Host 'BFF Demo starting on port 5174...' -ForegroundColor Green; npm run dev" -WindowStyle Normal
     
     Write-Host "`nAll services started in separate windows!" -ForegroundColor Green
-    Write-Host "`n- Backend:  http://localhost:8001" -ForegroundColor White
+    Write-Host "`n- Backend:  http://localhost:8002" -ForegroundColor White
     Write-Host "- Frontend: http://localhost:5173" -ForegroundColor White
     Write-Host "- BFF Demo: http://localhost:5174" -ForegroundColor White
     Write-Host "`nPress any key to continue..." -ForegroundColor Gray
@@ -56,7 +56,7 @@ function Start-AllServices {
 }
 
 function Start-Backend {
-    Write-Host "`nStarting backend on port 8001..." -ForegroundColor Green
+    Write-Host "`nStarting backend on port 8002..." -ForegroundColor Green
     cd $PSScriptRoot
     uv run python -m backend.main
 }
@@ -75,14 +75,14 @@ function Start-BFF {
 
 function Open-Browser {
     Write-Host "`nOpening applications in browser..." -ForegroundColor Green
-    Start-Process "http://localhost:8001/docs"
+    Start-Process "http://localhost:8002/docs"
     Start-Sleep -Seconds 1
     Start-Process "http://localhost:5173"
     Start-Sleep -Seconds 1
     Start-Process "http://localhost:5174"
     
     Write-Host "`nOpened:" -ForegroundColor Green
-    Write-Host "- API Docs:  http://localhost:8001/docs" -ForegroundColor White
+    Write-Host "- API Docs:  http://localhost:8002/docs" -ForegroundColor White
     Write-Host "- Frontend:  http://localhost:5173" -ForegroundColor White
     Write-Host "- BFF Demo:  http://localhost:5174" -ForegroundColor White
     Write-Host "`nPress any key to continue..." -ForegroundColor Gray

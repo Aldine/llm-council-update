@@ -2,7 +2,7 @@
  * API client for the LLM Council backend.
  */
 
-const API_BASE = 'http://localhost:8001';
+const API_BASE = 'http://localhost:8002';
 
 // Helper to get auth headers
 const getAuthHeaders = () => {
@@ -59,6 +59,23 @@ export const api = {
     );
     if (!response.ok) {
       throw new Error('Failed to get conversation');
+    }
+    return response.json();
+  },
+
+  /**
+   * Delete a conversation.
+   */
+  async deleteConversation(conversationId) {
+    const response = await fetch(
+      `${API_BASE}/api/conversations/${conversationId}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!response.ok) {
+      throw new Error('Failed to delete conversation');
     }
     return response.json();
   },
@@ -128,5 +145,52 @@ export const api = {
         }
       }
     }
+  },
+
+  /**
+   * Get prompt suggestions to help craft better questions.
+   */
+  async getPromptSuggestions(query = null, category = null, limit = 10) {
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    if (category) params.append('category', category);
+    params.append('limit', limit.toString());
+
+    const response = await fetch(
+      `${API_BASE}/prompts/suggestions?${params.toString()}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!response.ok) {
+      throw new Error('Failed to get prompt suggestions');
+    }
+    return response.json();
+  },
+
+  /**
+   * Get all available prompt categories.
+   */
+  async getPromptCategories() {
+    const response = await fetch(`${API_BASE}/prompts/categories`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to get prompt categories');
+    }
+    return response.json();
+  },
+
+  /**
+   * Get the INEVITABLE Core Prompt Pack.
+   */
+  async getCorePrompts() {
+    const response = await fetch(`${API_BASE}/prompts/core`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to get core prompts');
+    }
+    return response.json();
   },
 };

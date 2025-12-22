@@ -111,7 +111,8 @@ export default function History({ conversations, onSelectConversation, currentCo
   const grouped = groupByDate(conversations);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">History</h1>
@@ -176,6 +177,7 @@ export default function History({ conversations, onSelectConversation, currentCo
           />
         </div>
       )}
+      </div>
     </div>
   );
 }

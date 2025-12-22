@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const API_BASE = 'http://localhost:8001'
+const API_BASE = 'http://localhost:8002'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -27,7 +27,7 @@ function App() {
         setUser(null)
       }
     } catch (err) {
-      setError('Failed to connect to backend. Is it running on port 8001?')
+      setError('Failed to connect to backend. Is it running on port 8002?')
       console.error('Session check failed:', err)
     } finally {
       setLoading(false)
@@ -173,10 +173,10 @@ function App() {
         <h3 style={{ marginTop: '24px' }}>�📝 Frontend Code</h3>
         <div className="code-block">
           {`// Login: Just redirect
-window.location.href = 'http://localhost:8001/bff/auth/login'
+window.location.href = 'http://localhost:8002/bff/auth/login'
 
 // API calls: Include credentials
-fetch('http://localhost:8001/bff/me', {
+fetch('http://localhost:8002/bff/me', {
   credentials: 'include' // Sends HttpOnly cookie
 })
 

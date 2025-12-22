@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider, useToast } from './components/Toast';
 import Login from './components/Login';
 import Sidebar from './components/Sidebar';
 import TopNav from './components/TopNav';
@@ -13,6 +14,7 @@ const USE_BFF_AUTH = false; // Set to true to use BFF OAuth instead of JWT
 
 function AppContent() {
   const { state, user, logout } = useAuth();
+  const { showError, showSuccess } = useToast();
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -20,21 +22,41 @@ function AppContent() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentView, setCurrentView] = useState('deliberation'); // 'deliberation', 'history', 'settings'
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     try {
       const convs = await api.listConversations();
       setConversations(convs);
-    } catch (error) {
-      console.error('Failed to load conversations:', error);
+    } catch {
+      showError('Failed to load conversations');
     }
-  };
+  }, [showError]);
 
-  const loadConversation = async (id) => {
+  const loadConversation = useCallback(async (id) => {
     try {
       const conv = await api.getConversation(id);
+      console.log('[LoadConversation] Loaded:', conv);
       setCurrentConversation(conv);
     } catch (error) {
-      console.error('Failed to load conversation:', error);
+      console.error('[LoadConversation] Error:', error);
+      showError('Failed to load conversation');
+    }
+  }, [showError]);
+
+  const handleDeleteConversation = async (id) => {
+    try {
+      // Optimistically remove from UI
+      setConversations(conversations.filter(c => c.id !== id));
+      if (currentConversationId === id) {
+        setCurrentConversationId(null);
+        setCurrentConversation(null);
+      }
+      // Delete from backend
+      await api.deleteConversation(id);
+      showSuccess('Conversation deleted successfully');
+    } catch {
+      showError('Failed to delete conversation');
+      // Reload conversations on error
+      loadConversations();
     }
   };
 
@@ -43,14 +65,14 @@ function AppContent() {
     if (state === 'AUTHENTICATED') {
       loadConversations();
     }
-  }, [state]);
+  }, [state, loadConversations]);
 
   // Load conversation details when selected
   useEffect(() => {
     if (currentConversationId && state === 'AUTHENTICATED') {
       loadConversation(currentConversationId);
     }
-  }, [currentConversationId, state]);
+  }, [currentConversationId, state, loadConversation]);
 
   // Show loading spinner during initialization
   if (state === 'INITIALIZING') {
@@ -60,7 +82,7 @@ function AppContent() {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        background: 'var(--background)',
+           background: 'var(--color-background)',
         color: 'var(--primary)',
       }}>
         <div>Loading...</div>
@@ -72,7 +94,6 @@ function AppContent() {
   if (state === 'UNAUTHENTICATED' || state === 'AUTHENTICATING' || state === 'ERROR') {
     // Redirect to BFF OAuth if enabled
     if (USE_BFF_AUTH && state === 'UNAUTHENTICATED') {
-      window.location.href = 'http://localhost:8001/bff/auth/login';
       return <div style={{ padding: '40px', textAlign: 'center' }}>Redirecting to OAuth login...</div>;
     }
     return <Login />;
@@ -86,12 +107,13 @@ function AppContent() {
         ...conversations,
       ]);
       setCurrentConversationId(newConv.id);
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
+    } catch {
+      showError('Failed to create conversation');
     }
   };
 
   const handleSelectConversation = (id) => {
+    console.log('[SelectConversation] ID:', id);
     setCurrentConversationId(id);
     setCurrentView('deliberation'); // Switch to deliberation view when selecting a conversation
     setMobileMenuOpen(false);
@@ -101,6 +123,10 @@ function AppContent() {
     if (!currentConversationId) return;
 
     setIsLoading(true);
+    
+    // Check if CrewAI mode is enabled
+    const useCrewAI = localStorage.getItem('use_crewai') === 'true';
+    
     try {
       // Optimistically add user message to UI
       const userMessage = { role: 'user', content };
@@ -129,7 +155,36 @@ function AppContent() {
         messages: [...prev.messages, assistantMessage],
       }));
 
-      // Send message with streaming
+      // If CrewAI mode, use non-streaming API
+      if (useCrewAI) {
+        const response = await api.sendMessage(currentConversationId, content);
+        
+        console.log('[CrewAI] Response received:', response);
+        
+        // Update the assistant message with the complete response
+        setCurrentConversation((prev) => {
+          const messages = [...prev.messages];
+          const lastMsg = messages[messages.length - 1];
+          lastMsg.stage1 = response.stage1;
+          lastMsg.stage2 = response.stage2;
+          lastMsg.stage3 = response.stage3;
+          lastMsg.metadata = response.metadata;
+          lastMsg.loading = {
+            stage1: false,
+            stage2: false,
+            stage3: false,
+          };
+          console.log('[CrewAI] Updated message:', lastMsg);
+          return { ...prev, messages };
+        });
+        
+        // Reload conversations list to get updated title
+        await loadConversations();
+        setIsLoading(false);
+        return;
+      }
+
+      // Regular streaming mode
       await api.sendMessageStream(currentConversationId, content, (eventType, event) => {
         switch (eventType) {
           case 'stage1_start':
@@ -202,7 +257,7 @@ function AppContent() {
             break;
 
           case 'error':
-            console.error('Stream error:', event.message);
+            showError(event.message || 'An error occurred during streaming');
             setIsLoading(false);
             break;
 
@@ -210,8 +265,8 @@ function AppContent() {
             console.log('Unknown event type:', eventType);
         }
       });
-    } catch (error) {
-      console.error('Failed to send message:', error);
+    } catch {
+      showError('Failed to send message');
       // Remove optimistic messages on error
       setCurrentConversation((prev) => ({
         ...prev,
@@ -222,14 +277,15 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans antialiased">
+    <div className="h-screen bg-background font-sans antialiased flex flex-col">
       <TopNav onToggleSidebar={() => setMobileMenuOpen(!mobileMenuOpen)} />
-      <div className="flex relative">
+      <div className="flex flex-1 relative overflow-hidden">
         <Sidebar
           conversations={conversations}
           currentConversationId={currentConversationId}
           onSelectConversation={handleSelectConversation}
           onNewConversation={handleNewConversation}
+          onDeleteConversation={handleDeleteConversation}
           isOpen={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
           currentView={currentView}
@@ -240,7 +296,7 @@ function AppContent() {
           user={user}
           onLogout={logout}
         />
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 overflow-hidden">
           {currentView === 'deliberation' && (
             <ChatInterface
               conversation={currentConversation}
@@ -269,7 +325,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AuthProvider>
   );
 }

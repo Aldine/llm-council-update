@@ -8,7 +8,7 @@ import os
 import secrets
 import hashlib
 import base64
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from urllib.parse import urlencode
 
 import httpx
@@ -24,10 +24,10 @@ class OAuthConfig:
         
         if self.use_mock:
             # Mock OAuth endpoints for local testing
-            self.issuer = "http://localhost:8001"
-            self.authorization_endpoint = "http://localhost:8001/bff/mock/authorize"
-            self.token_endpoint = "http://localhost:8001/bff/mock/token"
-            self.userinfo_endpoint = "http://localhost:8001/bff/mock/userinfo"
+            self.issuer = "http://localhost:8002"
+            self.authorization_endpoint = "http://localhost:8002/bff/mock/authorize"
+            self.token_endpoint = "http://localhost:8002/bff/mock/token"
+            self.userinfo_endpoint = "http://localhost:8002/bff/mock/userinfo"
             self.client_id = "mock-client-id"
             self.client_secret = "mock-client-secret"
             self.scopes = ["openid", "profile", "email"]
@@ -41,7 +41,7 @@ class OAuthConfig:
             self.client_secret = os.getenv("OAUTH_CLIENT_SECRET", "")
             self.scopes = os.getenv("OAUTH_SCOPES", "openid profile email").split()
         
-        self.redirect_uri = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8001/bff/auth/callback")
+        self.redirect_uri = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8002/bff/auth/callback")
         self.app_base_url = os.getenv("APP_BASE_URL", "http://localhost:5173")
 
 

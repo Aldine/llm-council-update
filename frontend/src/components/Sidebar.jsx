@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import ConfirmModal from './ConfirmModal';
 
 export default function Sidebar({
   conversations,
   currentConversationId,
   onSelectConversation,
   onNewConversation,
+  onDeleteConversation,
   isOpen,
   onClose,
   currentView = 'deliberation',
@@ -13,6 +15,17 @@ export default function Sidebar({
   onLogout
 }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState(null);
+  const [useCrewAI, setUseCrewAI] = useState(() => {
+    return localStorage.getItem('use_crewai') === 'true';
+  });
+
+  const toggleCrewAI = () => {
+    const newValue = !useCrewAI;
+    setUseCrewAI(newValue);
+    localStorage.setItem('use_crewai', newValue.toString());
+  };
   
   // Get user initials for avatar
   const getUserInitials = () => {
@@ -59,6 +72,29 @@ export default function Sidebar({
             </div>
           </div>
 
+          <div className="px-4 pb-4">
+            <button
+              onClick={toggleCrewAI}
+              className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-sm border transition-all ${
+                useCrewAI 
+                  ? 'bg-primary/10 border-primary/50 text-primary' 
+                  : 'bg-card border-border text-muted-foreground hover:bg-accent/10'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span>🤖</span>
+                <span>CrewAI {useCrewAI ? 'ON' : 'OFF'}</span>
+              </span>
+              <div className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
+                useCrewAI ? 'bg-primary' : 'bg-muted'
+              }`}>
+                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                  useCrewAI ? 'translate-x-4' : 'translate-x-0.5'
+                }`} />
+              </div>
+            </button>
+          </div>
+
           <div className="px-4 py-2">
             <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-primary uppercase">
               Recent Sessions
@@ -70,24 +106,43 @@ export default function Sidebar({
                 </div>
               ) : (
                 conversations.map((conv) => (
-                  <button
+                  <div
                     key={conv.id}
-                    onClick={() => onSelectConversation(conv.id)}
-                    className={`group w-full text-left px-3 py-2 text-sm transition-colors rounded-sm flex flex-col gap-0.5 border ${
-                      conv.id === currentConversationId 
-                        ? 'bg-primary/15 border-primary/50 text-foreground font-medium shadow-[inset_0_0_0_1px_hsl(var(--primary))]' 
-                        : 'bg-card/60 border-border text-muted-foreground hover:bg-accent/10 hover:border-accent/40 hover:text-foreground'
-                    }`}
+                    className="relative group"
                   >
-                    <span className="truncate block w-full">
-                      {conv.title || 'Untitled Session'}
-                    </span>
-                    <span className={`text-[10px] ${
-                      conv.id === currentConversationId ? 'text-foreground/80' : 'text-muted-foreground/70 group-hover:text-foreground/70'
-                    }`}>
-                      {conv.message_count} messages
-                    </span>
-                  </button>
+                    <button
+                      onClick={() => onSelectConversation(conv.id)}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors rounded-sm flex flex-col gap-0.5 border ${
+                        conv.id === currentConversationId 
+                          ? 'bg-primary/15 border-primary/50 text-foreground font-medium shadow-[inset_0_0_0_1px_hsl(var(--primary))]' 
+                          : 'bg-card/60 border-border text-muted-foreground hover:bg-accent/10 hover:border-accent/40 hover:text-foreground'
+                      }`}
+                    >
+                      <span className="truncate block w-full pr-6">
+                        {conv.title || 'Untitled Session'}
+                      </span>
+                      <span className={`text-[10px] ${
+                        conv.id === currentConversationId ? 'text-foreground/80' : 'text-muted-foreground/70 group-hover:text-foreground/70'
+                      }`}>
+                        {conv.message_count} messages
+                      </span>
+                    </button>
+                    {onDeleteConversation && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConversationToDelete(conv);
+                          setDeleteModalOpen(true);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/20 rounded-sm transition-all"
+                        title="Delete conversation"
+                      >
+                        <svg className="w-4 h-4 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 ))
               )}
             </div>
@@ -207,6 +262,25 @@ export default function Sidebar({
           </div>
         </div>
       </aside>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setConversationToDelete(null);
+        }}
+        onConfirm={() => {
+          if (conversationToDelete) {
+            onDeleteConversation(conversationToDelete.id);
+          }
+        }}
+        title="Delete Conversation"
+        message={`Are you sure you want to delete "${conversationToDelete?.title || 'this conversation'}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </>
   );
 }

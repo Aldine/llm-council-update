@@ -1,6 +1,5 @@
 """OAuth configuration for BFF pattern."""
 import os
-from typing import Optional
 
 class OAuthConfig:
     """OAuth provider configuration."""
@@ -9,7 +8,7 @@ class OAuthConfig:
         self.issuer = os.getenv("OAUTH_ISSUER", "")
         self.client_id = os.getenv("OAUTH_CLIENT_ID", "")
         self.client_secret = os.getenv("OAUTH_CLIENT_SECRET", "")
-        self.redirect_uri = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8001/bff/auth/callback")
+        self.redirect_uri = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8002/bff/auth/callback")
         self.scopes = os.getenv("OAUTH_SCOPES", "openid profile email").split()
         self.app_base_url = os.getenv("APP_BASE_URL", "http://localhost:5173")
         

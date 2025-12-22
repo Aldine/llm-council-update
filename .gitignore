@@ -15,6 +15,9 @@ wheels/
 # Data files
 data/
 
+# Local prompt assets (do not commit)
+backend/prompt_library.pdf
+
 # Frontend
 frontend/node_modules/
 frontend/dist/

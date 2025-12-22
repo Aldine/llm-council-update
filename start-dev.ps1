@@ -2,7 +2,7 @@
 Write-Host "Starting LLM Council development servers..." -ForegroundColor Green
 
 # Start backend
-Write-Host "`n[1/2] Starting Backend (FastAPI on port 8001)..." -ForegroundColor Yellow
+Write-Host "`n[1/2] Starting Backend (FastAPI on port 8002)..." -ForegroundColor Yellow
 $backendJob = Start-Job -ScriptBlock {
     Set-Location "c:\Users\chapm\Downloads\llm-council-master\llm-council-master"
     uv run python -m backend.main
@@ -37,11 +37,11 @@ if ($portCheck) {
     Write-Host "✗ Port 5173 is NOT reachable" -ForegroundColor Red
 }
 
-$backendCheck = Test-NetConnection 127.0.0.1 -Port 8001 -InformationLevel Quiet -WarningAction SilentlyContinue
+$backendCheck = Test-NetConnection 127.0.0.1 -Port 8002 -InformationLevel Quiet -WarningAction SilentlyContinue
 if ($backendCheck) {
-    Write-Host "✓ Port 8001 (backend) is reachable" -ForegroundColor Green
+    Write-Host "✓ Port 8002 (backend) is reachable" -ForegroundColor Green
 } else {
-    Write-Host "✗ Port 8001 (backend) is NOT reachable" -ForegroundColor Red
+    Write-Host "✗ Port 8002 (backend) is NOT reachable" -ForegroundColor Red
 }
 
 Write-Host "`n" -NoNewline

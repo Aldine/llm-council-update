@@ -23,7 +23,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="h-full overflow-y-auto">
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight mb-2">Settings</h1>
         <p className="text-muted-foreground">Configure your LLM Council experience</p>
@@ -115,6 +116,82 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Deliberation Mode Explainer */}
+      <div className="border border-accent/30 rounded-lg bg-card p-6 space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold mb-1">Deliberation Modes</h2>
+          <p className="text-sm text-muted-foreground">Choose how AI agents collaborate to answer your questions</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Standard Council Mode */}
+          <div className={`p-4 border rounded-sm transition-all ${!useCrewAI ? 'border-primary bg-primary/5' : 'border-border bg-secondary/20'}`}>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-8 h-8 rounded-sm bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold mb-1">Standard Council</h3>
+                <span className="inline-block text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground mb-2">Default Mode</span>
+              </div>
+            </div>
+            <ul className="space-y-2 text-xs text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>3-Stage Deliberation:</strong> Individual responses → Peer review → Chairman synthesis</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Parallel Processing:</strong> All models respond simultaneously for speed</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Anonymous Review:</strong> Models rank responses without bias</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Best for:</strong> Fast, diverse perspectives with democratic consensus</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* CrewAI Mode */}
+          <div className={`p-4 border rounded-sm transition-all ${useCrewAI ? 'border-primary bg-primary/5' : 'border-border bg-secondary/20'}`}>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-8 h-8 rounded-sm bg-accent/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold mb-1">CrewAI Orchestration</h3>
+                <span className="inline-block text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent mb-2">Enhanced Mode</span>
+              </div>
+            </div>
+            <ul className="space-y-2 text-xs text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Role-Based Agents:</strong> Specialized agents with defined expertise and goals</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Sequential Tasks:</strong> Agents collaborate in a structured workflow</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Context Sharing:</strong> Agents build on each other's work iteratively</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent mt-0.5">•</span>
+                <span><strong>Best for:</strong> Deep analysis, complex reasoning, and coordinated problem-solving</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Preferences */}
       <div className="border border-border rounded-lg bg-card p-6 space-y-4">
         <div>
@@ -124,15 +201,15 @@ export default function Settings() {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 border border-border rounded-sm bg-primary/5">
-            <div>
+            <div className="flex-1">
               <div className="text-sm font-medium">🤖 Use CrewAI Multi-Agent Orchestration</div>
               <div className="text-xs text-muted-foreground">
-                Enable CrewAI's advanced agent orchestration system for enhanced deliberation
+                Enable role-based agents with sequential task execution for deeper analysis
               </div>
             </div>
             <button 
               onClick={toggleCrewAI}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ml-4 ${
                 useCrewAI ? 'bg-primary' : 'bg-muted'
               }`}
             >
@@ -186,6 +263,7 @@ export default function Settings() {
             <a href="#" className="text-primary hover:underline">Report Issue</a>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

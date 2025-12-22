@@ -3,7 +3,8 @@
 from typing import List, Dict, Any, Tuple
 from crewai import Agent, Task, Crew, Process
 from crewai import LLM
-from .config import COUNCIL_MODELS, CHAIRMAN_MODEL, OPENROUTER_API_KEY, OPENROUTER_API_URL
+from .config import COUNCIL_MODELS, CHAIRMAN_MODEL, OPENROUTER_API_KEY
+from .council import calculate_aggregate_rankings
 import os
 
 
@@ -18,7 +19,8 @@ def create_openrouter_llm(model: str) -> LLM:
         LLM instance configured for OpenRouter
     """
     # Set environment variable for LiteLLM to use OpenRouter
-    os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
+    if OPENROUTER_API_KEY:
+        os.environ["OPENROUTER_API_KEY"] = OPENROUTER_API_KEY
     
     # LiteLLM format: openrouter/provider/model
     # OpenRouter model format: provider/model
@@ -311,6 +313,9 @@ async def run_crew_council_deliberation(user_query: str) -> Dict[str, Any]:
         user_query, stage1_results
     )
     
+    # Calculate aggregate rankings
+    aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
+    
     # Stage 3: Synthesize final response
     stage3_result = await crew_stage3_synthesize_final(
         user_query, stage1_results, stage2_results
@@ -321,7 +326,8 @@ async def run_crew_council_deliberation(user_query: str) -> Dict[str, Any]:
         "stage2": stage2_results,
         "stage3": stage3_result,
         "metadata": {
-            "labelToModel": label_to_model,
+            "label_to_model": label_to_model,
+            "aggregate_rankings": aggregate_rankings,
             "framework": "crewai",
         }
     }

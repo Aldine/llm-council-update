@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import Stage1 from './Stage1';
 import Stage2 from './Stage2';
 import Stage3 from './Stage3';
+import PromptHelper from './PromptHelper';
 
 export default function ChatInterface({
   conversation,
@@ -37,8 +38,9 @@ export default function ChatInterface({
   };
 
   if (!conversation) {
+    console.log('[ChatInterface] No conversation provided');
     return (
-      <div className="flex-1 flex items-center justify-center h-full bg-background">
+      <div className="h-full flex items-center justify-center bg-background">
         <div className="text-center space-y-4 max-w-md px-6">
           <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <div className="w-8 h-8 bg-accent rounded-sm animate-pulse" />
@@ -50,10 +52,15 @@ export default function ChatInterface({
     );
   }
 
+  console.log('[ChatInterface] Rendering with conversation:', conversation);
+  console.log('[ChatInterface] Messages:', conversation.messages);
+  console.log('[ChatInterface] Messages is Array?:', Array.isArray(conversation.messages));
+  console.log('[ChatInterface] Messages count:', conversation.messages?.length);
+
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] bg-background">
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
-        {conversation.messages.length === 0 ? (
+    <div className="flex flex-col h-full bg-background">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+        {!conversation.messages || conversation.messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
             <h2 className="text-xl font-medium">Start a conversation</h2>
             <p className="text-sm text-muted-foreground">Ask a question to consult the LLM Council</p>
@@ -120,6 +127,10 @@ export default function ChatInterface({
 
       <div className="p-6 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-4xl mx-auto relative">
+          <div className="mb-3 flex justify-center">
+            <PromptHelper placement="inline" onSelectPrompt={(text) => setInput(text)} />
+          </div>
+
           <form onSubmit={handleSubmit} className="relative">
             <textarea
               value={input}

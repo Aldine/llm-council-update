@@ -48,12 +48,82 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Soft ocean four-leaf clover pattern with mixed light colors */
+    background-image: 
+      /* Clover 1 (dark teal) - 4 petals in cross pattern */
+      radial-gradient(ellipse 8px 10px at 25% 30%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 18% 38%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 32% 38%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 25% 46%, oklch(62% 0.08 200) 50%, transparent 50%),
+      /* Clover 1 stem */
+      radial-gradient(ellipse 2px 6px at 25% 52%, oklch(52% 0.06 200) 50%, transparent 50%),
+      
+      /* Clover 2 (light cyan) - 4 petals */
+      radial-gradient(ellipse 8px 10px at 75% 30%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 68% 38%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 82% 38%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 75% 46%, oklch(75% 0.05 190) 50%, transparent 50%),
+      /* Clover 2 stem */
+      radial-gradient(ellipse 2px 6px at 75% 52%, oklch(65% 0.04 190) 50%, transparent 50%),
+      
+      /* Clover 3 (light cyan) - offset row */
+      radial-gradient(ellipse 8px 10px at 50% 80%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 43% 88%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 57% 88%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 50% 96%, oklch(75% 0.05 190) 50%, transparent 50%),
+      /* Clover 3 stem */
+      radial-gradient(ellipse 2px 6px at 50% 102%, oklch(65% 0.04 190) 50%, transparent 50%),
+      
+      /* Clover 4 (dark teal) - offset row */
+      radial-gradient(ellipse 8px 10px at 0% 80%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at -7% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 7% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 0% 96%, oklch(62% 0.08 200) 50%, transparent 50%),
+      /* Clover 4 stem */
+      radial-gradient(ellipse 2px 6px at 0% 102%, oklch(52% 0.06 200) 50%, transparent 50%),
+      
+      /* Clover 5 (dark teal) - offset row */
+      radial-gradient(ellipse 8px 10px at 100% 80%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 93% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 107% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 100% 96%, oklch(62% 0.08 200) 50%, transparent 50%),
+      /* Clover 5 stem */
+      radial-gradient(ellipse 2px 6px at 100% 102%, oklch(52% 0.06 200) 50%, transparent 50%);
+    background-size: 100px 100px;
+    background-position: 0 0;
   }
   
   #root {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
+  }
+  
+  /* Custom scrollbar styling to match theme */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--color-card);
+    border-radius: 0;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 6px;
+    border: 2px solid var(--color-card);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+  
+  /* Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-card);
   }
   
   /* Dark + Moody typography hierarchy */
@@ -99,8 +169,8 @@
   
   /* Structured cards with thin borders */
   .card-racing {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
     border-radius: calc(var(--radius) - 2px);
     padding: 1.5rem;
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
@@ -108,7 +178,7 @@
     transition-duration: 100ms;
   }
   .card-racing:hover {
-    border-color: hsl(var(--accent) / 0.5);
+    border-color: color-mix(in oklch, var(--color-accent) 50%, transparent);
   }
   
   /* Subtle hover states */
@@ -118,7 +188,7 @@
     transition-duration: 100ms;
   }
   .hover-racing:hover {
-    color: hsl(var(--foreground));
+    color: var(--color-foreground);
   }
   
   /* Markdown content with Porsche Racing style */
@@ -161,7 +231,7 @@
   }
   
   .markdown-content pre {
-    background-color: hsl(var(--muted));
+    background-color: var(--color-muted);
     padding: 0.75rem;
     border-radius: calc(var(--radius) - 2px);
     overflow-x: auto;
@@ -171,7 +241,7 @@
   }
   
   .markdown-content code {
-    background-color: hsl(var(--muted));
+    background-color: var(--color-muted);
     padding: 0.125rem 0.375rem;
     border-radius: calc(var(--radius) - 2px);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -186,9 +256,9 @@
   
   .markdown-content blockquote {
     border-left-width: 2px;
-    border-color: hsl(var(--border));
+    border-color: var(--color-border);
     padding-left: 1rem;
-    color: hsl(var(--muted-foreground));
+    color: var(--color-muted-foreground);
     margin-bottom: 0.75rem;
   }
 }

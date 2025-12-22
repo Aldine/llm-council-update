@@ -18,7 +18,7 @@ echo   Choose an option:
 echo ========================================
 echo.
 echo 1. Start EVERYTHING (Backend + Frontend + BFF Demo)
-echo 2. Start Backend only (Port 8001)
+echo 2. Start Backend only (Port 8002)
 echo 3. Start Frontend only (JWT-based, Port 5173)
 echo 4. Start BFF Demo only (Port 5174)
 echo 5. Open Applications in Browser
@@ -41,7 +41,7 @@ if "%choice%"=="8" goto end
 :start_all
 echo.
 echo Starting all services...
-start "Backend (Port 8001)" powershell -NoExit -Command "cd '%~dp0'; uv run python -m backend.main"
+start "Backend (Port 8002)" powershell -NoExit -Command "cd '%~dp0'; uv run python -m backend.main"
 timeout /t 3 /nobreak >nul
 start "Frontend (Port 5173)" powershell -NoExit -Command "cd '%~dp0frontend'; npm run dev"
 timeout /t 2 /nobreak >nul
@@ -49,7 +49,7 @@ start "BFF Demo (Port 5174)" powershell -NoExit -Command "cd '%~dp0frontend-bff'
 echo.
 echo All services started in separate windows!
 echo.
-echo - Backend:  http://localhost:8001
+echo - Backend:  http://localhost:8002
 echo - Frontend: http://localhost:5173
 echo - BFF Demo: http://localhost:5174
 echo.
@@ -58,7 +58,7 @@ goto end
 
 :start_backend
 echo.
-echo Starting backend on port 8001...
+echo Starting backend on port 8002...
 cd "%~dp0"
 uv run python -m backend.main
 goto end
@@ -80,14 +80,14 @@ goto end
 :open_browser
 echo.
 echo Opening applications in browser...
-start http://localhost:8001/docs
+start http://localhost:8002/docs
 timeout /t 1 /nobreak >nul
 start http://localhost:5173
 timeout /t 1 /nobreak >nul
 start http://localhost:5174
 echo.
 echo Opened:
-echo - API Docs:  http://localhost:8001/docs
+echo - API Docs:  http://localhost:8002/docs
 echo - Frontend:  http://localhost:5173
 echo - BFF Demo:  http://localhost:5174
 echo.

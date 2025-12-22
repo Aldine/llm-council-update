@@ -12,6 +12,8 @@ import asyncio
 from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
 from .crew_council import run_crew_council_deliberation
+from .prompts import get_prompt_suggestions, get_categories
+from .core_prompts import get_core_prompts
 from .auth import (
     authenticate_user, 
     get_current_user,
@@ -172,7 +174,7 @@ async def refresh_token(request: RefreshRequest):
                 "name": user["name"]
             }
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 
@@ -221,6 +223,20 @@ async def get_conversation(
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conversation
+
+
+@app.delete("/api/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: str,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """Delete a conversation.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    success = storage.delete_conversation(conversation_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"message": "Conversation deleted successfully", "id": conversation_id}
 
 
 @app.post("/api/conversations/{conversation_id}/message")
@@ -390,3 +406,38 @@ async def send_message_crew(
     return result
 
 
+@app.get("/prompts/suggestions")
+async def get_suggestions(
+    query: Optional[str] = None,
+    category: Optional[str] = None,
+    limit: int = 10,
+    user: Optional[Dict] = Depends(get_optional_user)
+):
+    """Get prompt suggestions to help users craft better questions."""
+    suggestions = get_prompt_suggestions(query=query, category=category, limit=limit)
+    return {"suggestions": suggestions}
+
+
+@app.get("/prompts/categories")
+async def get_prompt_categories(user: Optional[Dict] = Depends(get_optional_user)):
+    """Get all available prompt categories."""
+    categories = get_categories()
+    return {"categories": categories}
+
+
+@app.get("/prompts/core")
+async def get_core_prompt_pack(user: Optional[Dict] = Depends(get_optional_user)):
+    """Get the INEVITABLE Core Prompt Pack (named, reusable templates)."""
+    return {"prompts": get_core_prompts()}
+
+
+if __name__ == "__main__":
+    import os
+
+    import uvicorn
+
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8002"))
+    reload = os.getenv("RELOAD", "").lower() in {"1", "true", "yes"}
+
+    uvicorn.run("backend.main:app", host=host, port=port, reload=reload)

@@ -2,7 +2,7 @@
  * Authentication service for web frontend
  */
 
-const API_BASE = 'http://localhost:8001';
+const API_BASE = 'http://localhost:8002';
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'auth_access_token';
@@ -157,7 +157,7 @@ export const authService = {
       }
 
       return await response.json();
-    } catch (error) {
+    } catch {
       // Try to refresh token
       try {
         await this.refreshToken();
