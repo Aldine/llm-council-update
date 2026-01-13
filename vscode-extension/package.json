@@ -1,0 +1,112 @@
+{
+    "name": "confucius-agent",
+    "displayName": "Confucius Agent - Ralph Loop",
+    "description": "AI Agent scaffold with Ralph Wiggum autonomous loop pattern - available globally across all workspaces",
+    "version": "0.1.0",
+    "publisher": "confucius-agent",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Other",
+        "Programming Languages"
+    ],
+    "keywords": [
+        "ai",
+        "agent",
+        "coding",
+        "automation",
+        "ralph-wiggum",
+        "confucius"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "confucius.runTask",
+                "title": "Confucius: Run AI Agent on Task"
+            },
+            {
+                "command": "confucius.ralphLoop",
+                "title": "Confucius: Start Ralph Loop"
+            },
+            {
+                "command": "confucius.searchNotes",
+                "title": "Confucius: Search Past Notes"
+            },
+            {
+                "command": "confucius.init",
+                "title": "Confucius: Initialize in Workspace"
+            },
+            {
+                "command": "confucius.stopLoop",
+                "title": "Confucius: Stop Current Loop"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "confucius.runTask",
+                "key": "ctrl+shift+c",
+                "mac": "cmd+shift+c"
+            },
+            {
+                "command": "confucius.ralphLoop",
+                "key": "ctrl+shift+r",
+                "mac": "cmd+shift+r"
+            }
+        ],
+        "configuration": {
+            "title": "Confucius Agent",
+            "properties": {
+                "confucius.model": {
+                    "type": "string",
+                    "default": "claude-sonnet-4-20250514",
+                    "description": "Default LLM model to use"
+                },
+                "confucius.maxIterations": {
+                    "type": "number",
+                    "default": 20,
+                    "description": "Maximum Ralph loop iterations"
+                },
+                "confucius.completionPromise": {
+                    "type": "string",
+                    "default": "TASK_COMPLETE",
+                    "description": "String that signals task completion"
+                },
+                "confucius.enableNotes": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable persistent note-taking"
+                },
+                "confucius.pythonPath": {
+                    "type": "string",
+                    "default": "python",
+                    "description": "Path to Python executable"
+                }
+            }
+        },
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "confucius.runTask",
+                    "group": "confucius"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "package": "vsce package"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.80.0",
+        "typescript": "^5.0.0",
+        "@vscode/vsce": "^2.15.0"
+    }
+}

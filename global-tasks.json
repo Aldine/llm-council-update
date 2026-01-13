@@ -1,0 +1,121 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "🎭 Confucius: Run AI Agent",
+            "type": "shell",
+            "command": "confucius",
+            "args": ["run", "${input:agentTask}", "-w", "${workspaceFolder}", "-v"],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            }
+        },
+        {
+            "label": "🎭 Ralph Loop: Run Command Until Complete",
+            "type": "shell",
+            "command": "ralph-loop",
+            "args": [
+                "${input:loopCommand}",
+                "--completion", "${input:completionPromise}",
+                "--max-iter", "${input:maxIterations}",
+                "--verbose"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            }
+        },
+        {
+            "label": "🎭 Ralph Loop: Quick npm test",
+            "type": "shell",
+            "command": "ralph-loop",
+            "args": [
+                "npm test",
+                "--completion", "passing",
+                "--max-iter", "10",
+                "--verbose"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "🎭 Ralph Loop: Quick pytest",
+            "type": "shell",
+            "command": "ralph-loop",
+            "args": [
+                "pytest",
+                "--completion", "passed",
+                "--max-iter", "10",
+                "--verbose"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "🎭 Confucius: Search Notes",
+            "type": "shell",
+            "command": "confucius",
+            "args": ["notes", "-w", "${workspaceFolder}", "-q", "${input:searchQuery}"],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "🎭 Confucius: Initialize Workspace",
+            "type": "shell",
+            "command": "confucius",
+            "args": ["init", "${workspaceFolder}"],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "agentTask",
+            "type": "promptString",
+            "description": "Enter the task for the AI agent",
+            "default": "Fix the failing tests"
+        },
+        {
+            "id": "loopCommand",
+            "type": "promptString",
+            "description": "Command to run in the Ralph loop",
+            "default": "npm test"
+        },
+        {
+            "id": "completionPromise",
+            "type": "promptString",
+            "description": "String that signals completion",
+            "default": "DONE"
+        },
+        {
+            "id": "maxIterations",
+            "type": "promptString",
+            "description": "Maximum iterations",
+            "default": "20"
+        },
+        {
+            "id": "searchQuery",
+            "type": "promptString",
+            "description": "Search query for notes",
+            "default": ""
+        }
+    ]
+}

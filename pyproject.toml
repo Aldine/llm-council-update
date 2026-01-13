@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "confucius-agent"
+version = "0.1.0"
+description = "Confucius-inspired AI agent scaffold with Ralph Wiggum loop pattern - supports Claude, GPT-5.2, Gemini, and OpenRouter"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Aldine", email = "aldine@example.com"}
+]
+keywords = ["ai", "agent", "llm", "coding", "automation", "ralph-wiggum", "confucius", "claude", "gpt", "gemini", "openrouter"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0.0",
+    "click>=8.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+# Individual providers
+anthropic = ["anthropic>=0.18.0"]
+openai = ["openai>=1.0.0"]
+google = ["google-generativeai>=0.3.0"]
+openrouter = ["openai>=1.0.0"]  # Uses OpenAI client
+
+# Bundles
+all = [
+    "anthropic>=0.18.0",
+    "openai>=1.0.0",
+    "google-generativeai>=0.3.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+swe = [
+    "swe-rex>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Aldine/confucius-agent"
+Documentation = "https://github.com/Aldine/confucius-agent#readme"
+Repository = "https://github.com/Aldine/confucius-agent"
+
+[project.scripts]
+# CLI entry points - available globally after pip install
+confucius = "confucius_agent.cli:main"
+ralph-loop = "confucius_agent.cli:ralph_loop"
+cca = "confucius_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+confucius_agent = ["templates/*.md", "prompts/*.txt"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
