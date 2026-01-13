@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+/* Tailwind v4 theme configuration */
+@theme {
+  /* Ocean Blue Gradient Theme - Deep navy to bright cyan */
+  --color-background: oklch(15% 0.05 240);      /* Deep navy blue #001233 */
+  --color-foreground: oklch(95% 0.01 240);      /* Light text */
+  
+  --color-card: oklch(25% 0.08 240);            /* Dark blue #00274D */
+  --color-card-foreground: oklch(95% 0.01 240);
+  
+  --color-popover: oklch(20% 0.06 240);
+  --color-popover-foreground: oklch(95% 0.01 240);
+  
+  --color-primary: oklch(60% 0.15 220);         /* Bright blue #2A8FBD */
+  --color-primary-foreground: oklch(98% 0 0);
+  
+  --color-secondary: oklch(35% 0.10 230);       /* Medium blue #004D80 */
+  --color-secondary-foreground: oklch(95% 0.01 240);
+  
+  --color-muted: oklch(30% 0.08 240);
+  --color-muted-foreground: oklch(70% 0.05 240);
+  
+  --color-accent: oklch(65% 0.18 200);          /* Cyan accent #33B8CC */
+  --color-accent-foreground: oklch(15% 0.05 240);
+  
+  --color-destructive: oklch(55% 0.22 25);
+  --color-destructive-foreground: oklch(98% 0 0);
+  
+  --color-border: oklch(35% 0.08 235);
+  --color-input: oklch(35% 0.10 230);
+  --color-ring: oklch(65% 0.18 200);            /* Cyan ring */
+  
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Soft ocean four-leaf clover pattern with mixed light colors */
+    background-image: 
+      /* Clover 1 (dark teal) - 4 petals in cross pattern */
+      radial-gradient(ellipse 8px 10px at 25% 30%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 18% 38%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 32% 38%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 25% 46%, oklch(62% 0.08 200) 50%, transparent 50%),
+      /* Clover 1 stem */
+      radial-gradient(ellipse 2px 6px at 25% 52%, oklch(52% 0.06 200) 50%, transparent 50%),
+      
+      /* Clover 2 (light cyan) - 4 petals */
+      radial-gradient(ellipse 8px 10px at 75% 30%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 68% 38%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 82% 38%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 75% 46%, oklch(75% 0.05 190) 50%, transparent 50%),
+      /* Clover 2 stem */
+      radial-gradient(ellipse 2px 6px at 75% 52%, oklch(65% 0.04 190) 50%, transparent 50%),
+      
+      /* Clover 3 (light cyan) - offset row */
+      radial-gradient(ellipse 8px 10px at 50% 80%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 43% 88%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 57% 88%, oklch(75% 0.05 190) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 50% 96%, oklch(75% 0.05 190) 50%, transparent 50%),
+      /* Clover 3 stem */
+      radial-gradient(ellipse 2px 6px at 50% 102%, oklch(65% 0.04 190) 50%, transparent 50%),
+      
+      /* Clover 4 (dark teal) - offset row */
+      radial-gradient(ellipse 8px 10px at 0% 80%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at -7% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 7% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 0% 96%, oklch(62% 0.08 200) 50%, transparent 50%),
+      /* Clover 4 stem */
+      radial-gradient(ellipse 2px 6px at 0% 102%, oklch(52% 0.06 200) 50%, transparent 50%),
+      
+      /* Clover 5 (dark teal) - offset row */
+      radial-gradient(ellipse 8px 10px at 100% 80%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 93% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 10px 8px at 107% 88%, oklch(62% 0.08 200) 50%, transparent 50%),
+      radial-gradient(ellipse 8px 10px at 100% 96%, oklch(62% 0.08 200) 50%, transparent 50%),
+      /* Clover 5 stem */
+      radial-gradient(ellipse 2px 6px at 100% 102%, oklch(52% 0.06 200) 50%, transparent 50%);
+    background-size: 100px 100px;
+    background-position: 0 0;
+  }
+  
+  #root {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+  
+  /* Custom scrollbar styling to match theme */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--color-card);
+    border-radius: 0;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 6px;
+    border: 2px solid var(--color-card);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+  
+  /* Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-card);
+  }
+  
+  /* Dark + Moody typography hierarchy */
+  h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  
+  h2 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  
+  /* Uppercase labels for section headers */
+  .label-uppercase {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+}
+
+@layer components {
+  /* Grid-driven layouts */
+  .grid-layout {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  /* Structured cards with thin borders */
+  .card-racing {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: calc(var(--radius) - 2px);
+    padding: 1.5rem;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 100ms;
+  }
+  .card-racing:hover {
+    border-color: color-mix(in oklch, var(--color-accent) 50%, transparent);
+  }
+  
+  /* Subtle hover states */
+  .hover-racing {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 100ms;
+  }
+  .hover-racing:hover {
+    color: var(--color-foreground);
+  }
+  
+  /* Markdown content with Porsche Racing style */
+  .markdown-content {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.625;
+  }
+  
+  .markdown-content p {
+    margin-bottom: 0.75rem;
+  }
+  .markdown-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  .markdown-content h1:first-child,
+  .markdown-content h2:first-child,
+  .markdown-content h3:first-child {
+    margin-top: 0;
+  }
+  
+  .markdown-content ul,
+  .markdown-content ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+  }
+  
+  .markdown-content li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .markdown-content pre {
+    background-color: var(--color-muted);
+    padding: 0.75rem;
+    border-radius: calc(var(--radius) - 2px);
+    overflow-x: auto;
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  
+  .markdown-content code {
+    background-color: var(--color-muted);
+    padding: 0.125rem 0.375rem;
+    border-radius: calc(var(--radius) - 2px);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  
+  .markdown-content pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  .markdown-content blockquote {
+    border-left-width: 2px;
+    border-color: var(--color-border);
+    padding-left: 1rem;
+    color: var(--color-muted-foreground);
+    margin-bottom: 0.75rem;
+  }
+}

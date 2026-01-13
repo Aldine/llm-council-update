@@ -1,0 +1,443 @@
+"""FastAPI backend for LLM Council."""
+
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
+import uuid
+import json
+import asyncio
+
+from . import storage
+from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
+from .crew_council import run_crew_council_deliberation
+from .prompts import get_prompt_suggestions, get_categories
+from .core_prompts import get_core_prompts
+from .auth import (
+    authenticate_user, 
+    get_current_user,
+    get_optional_user,
+    create_access_token, 
+    create_refresh_token,
+    decode_token
+)
+from .bff.routes import router as bff_router
+
+app = FastAPI(title="LLM Council API")
+
+# Mount BFF router (OAuth + session-based auth)
+app.include_router(bff_router)
+
+# Enable CORS for local development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5176",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class CreateConversationRequest(BaseModel):
+    """Request to create a new conversation."""
+    pass
+
+
+class SendMessageRequest(BaseModel):
+    """Request to send a message in a conversation."""
+    content: str
+
+
+class ConversationMetadata(BaseModel):
+    """Conversation metadata for list view."""
+    id: str
+    created_at: str
+    title: str
+    message_count: int
+
+
+class Conversation(BaseModel):
+    """Full conversation with all messages."""
+    id: str
+    created_at: str
+    title: str
+    messages: List[Dict[str, Any]]
+
+
+class LoginRequest(BaseModel):
+    """Login request with email and password."""
+    email: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    """Token response with access and refresh tokens."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    user: Dict[str, str]
+
+
+class RefreshRequest(BaseModel):
+    """Refresh token request."""
+    refresh_token: str
+
+
+@app.get("/")
+async def root():
+    """API information and navigation."""
+    return {
+        "service": "LLM Council API",
+        "version": "1.0.0",
+        "status": "ok",
+        "authentication": {
+            "jwt": {
+                "description": "Token-based authentication (localStorage)",
+                "login": "/api/auth/login",
+                "refresh": "/api/auth/refresh",
+                "logout": "/api/auth/logout",
+                "me": "/api/auth/me"
+            },
+            "bff": {
+                "description": "OAuth with server-side sessions (HttpOnly cookies)",
+                "login": "/bff/auth/login",
+                "callback": "/bff/auth/callback",
+                "logout": "/bff/auth/logout",
+                "me": "/bff/me",
+                "mock": "/bff/mock/authorize"
+            }
+        },
+        "docs": "/docs",
+        "frontends": {
+            "main": "http://localhost:5173 (JWT-based)",
+            "bff_demo": "http://localhost:5174 (BFF OAuth demo)"
+        }
+    }
+
+
+@app.post("/api/auth/login", response_model=TokenResponse)
+async def login(request: LoginRequest):
+    """Authenticate user and return tokens."""
+    user = authenticate_user(request.email, request.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect email or password"
+        )
+    
+    access_token = create_access_token(data={"sub": user["email"]})
+    refresh_token = create_refresh_token(data={"sub": user["email"]})
+    
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user={
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"]
+        }
+    )
+
+
+@app.post("/api/auth/refresh", response_model=TokenResponse)
+async def refresh_token(request: RefreshRequest):
+    """Refresh access token using refresh token."""
+    try:
+        payload = decode_token(request.refresh_token)
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        from .auth import MOCK_USERS
+        user = MOCK_USERS.get(email)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        access_token = create_access_token(data={"sub": email})
+        new_refresh_token = create_refresh_token(data={"sub": email})
+        
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            user={
+                "id": user["id"],
+                "email": user["email"],
+                "name": user["name"]
+            }
+        )
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+
+@app.post("/api/auth/logout")
+async def logout(current_user: dict = Depends(get_current_user)):
+    """Logout endpoint (client must clear tokens)."""
+    return {"message": "Logged out successfully"}
+
+
+@app.get("/api/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    """Get current user info."""
+    return current_user
+
+
+@app.get("/api/conversations", response_model=List[ConversationMetadata])
+async def list_conversations(current_user: Optional[dict] = Depends(get_optional_user)):
+    """List all conversations (metadata only).
+    Works with or without authentication for web/mobile compatibility.
+    """
+    return storage.list_conversations()
+
+
+@app.post("/api/conversations", response_model=Conversation)
+async def create_conversation(
+    request: CreateConversationRequest,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """Create a new conversation.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    conversation_id = str(uuid.uuid4())
+    conversation = storage.create_conversation(conversation_id)
+    return conversation
+
+
+@app.get("/api/conversations/{conversation_id}", response_model=Conversation)
+async def get_conversation(
+    conversation_id: str,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """Get a specific conversation with all its messages.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    conversation = storage.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conversation
+
+
+@app.delete("/api/conversations/{conversation_id}")
+async def delete_conversation(
+    conversation_id: str,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """Delete a conversation.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    success = storage.delete_conversation(conversation_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"message": "Conversation deleted successfully", "id": conversation_id}
+
+
+@app.post("/api/conversations/{conversation_id}/message")
+async def send_message(
+    conversation_id: str, 
+    request: SendMessageRequest,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """
+    Send a message and run the 3-stage council process.
+    Returns the complete response with all stages.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    # Check if conversation exists
+    conversation = storage.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Check if this is the first message
+    is_first_message = len(conversation["messages"]) == 0
+
+    # Add user message
+    storage.add_user_message(conversation_id, request.content)
+
+    # If this is the first message, generate a title
+    if is_first_message:
+        title = await generate_conversation_title(request.content)
+        storage.update_conversation_title(conversation_id, title)
+
+    # Run the 3-stage council process
+    stage1_results, stage2_results, stage3_result, metadata = await run_full_council(
+        request.content
+    )
+
+    # Add assistant message with all stages
+    storage.add_assistant_message(
+        conversation_id,
+        stage1_results,
+        stage2_results,
+        stage3_result
+    )
+
+    # Return the complete response with metadata
+    return {
+        "stage1": stage1_results,
+        "stage2": stage2_results,
+        "stage3": stage3_result,
+        "metadata": metadata
+    }
+
+
+@app.post("/api/conversations/{conversation_id}/message/stream")
+async def send_message_stream(
+    conversation_id: str, 
+    request: SendMessageRequest,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """
+    Send a message and stream the 3-stage council process.
+    Returns Server-Sent Events as each stage completes.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    # Check if conversation exists
+    conversation = storage.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Check if this is the first message
+    is_first_message = len(conversation["messages"]) == 0
+
+    async def event_generator():
+        try:
+            # Add user message
+            storage.add_user_message(conversation_id, request.content)
+
+            # Start title generation in parallel (don't await yet)
+            title_task = None
+            if is_first_message:
+                title_task = asyncio.create_task(generate_conversation_title(request.content))
+
+            # Stage 1: Collect responses
+            yield f"data: {json.dumps({'type': 'stage1_start'})}\n\n"
+            stage1_results = await stage1_collect_responses(request.content)
+            yield f"data: {json.dumps({'type': 'stage1_complete', 'data': stage1_results})}\n\n"
+
+            # Stage 2: Collect rankings
+            yield f"data: {json.dumps({'type': 'stage2_start'})}\n\n"
+            stage2_results, label_to_model = await stage2_collect_rankings(request.content, stage1_results)
+            aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
+            yield f"data: {json.dumps({'type': 'stage2_complete', 'data': stage2_results, 'metadata': {'label_to_model': label_to_model, 'aggregate_rankings': aggregate_rankings}})}\n\n"
+
+            # Stage 3: Synthesize final answer
+            yield f"data: {json.dumps({'type': 'stage3_start'})}\n\n"
+            stage3_result = await stage3_synthesize_final(request.content, stage1_results, stage2_results)
+            yield f"data: {json.dumps({'type': 'stage3_complete', 'data': stage3_result})}\n\n"
+
+            # Wait for title generation if it was started
+            if title_task:
+                title = await title_task
+                storage.update_conversation_title(conversation_id, title)
+                yield f"data: {json.dumps({'type': 'title_complete', 'data': {'title': title}})}\n\n"
+
+            # Save complete assistant message
+            storage.add_assistant_message(
+                conversation_id,
+                stage1_results,
+                stage2_results,
+                stage3_result
+            )
+
+            # Send completion event
+            yield f"data: {json.dumps({'type': 'complete'})}\n\n"
+
+        except Exception as e:
+            # Send error event
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
+
+
+@app.post("/api/conversations/{conversation_id}/message/crew")
+async def send_message_crew(
+    conversation_id: str, 
+    request: SendMessageRequest,
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    """
+    Send a message and run the CrewAI-powered 3-stage council process.
+    Returns the complete response with all stages using multi-agent orchestration.
+    Works with or without authentication for web/mobile compatibility.
+    """
+    # Check if conversation exists
+    conversation = storage.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Check if this is the first message
+    is_first_message = len(conversation["messages"]) == 0
+
+    # Add user message
+    storage.add_user_message(conversation_id, request.content)
+
+    # If this is the first message, generate a title
+    if is_first_message:
+        title = await generate_conversation_title(request.content)
+        storage.update_conversation_title(conversation_id, title)
+
+    # Run the CrewAI-powered 3-stage council process
+    result = await run_crew_council_deliberation(request.content)
+
+    # Add assistant message with all stages
+    storage.add_assistant_message(
+        conversation_id,
+        result["stage1"],
+        result["stage2"],
+        result["stage3"]
+    )
+
+    # Return the complete response with metadata
+    return result
+
+
+@app.get("/prompts/suggestions")
+async def get_suggestions(
+    query: Optional[str] = None,
+    category: Optional[str] = None,
+    limit: int = 10,
+    user: Optional[Dict] = Depends(get_optional_user)
+):
+    """Get prompt suggestions to help users craft better questions."""
+    suggestions = get_prompt_suggestions(query=query, category=category, limit=limit)
+    return {"suggestions": suggestions}
+
+
+@app.get("/prompts/categories")
+async def get_prompt_categories(user: Optional[Dict] = Depends(get_optional_user)):
+    """Get all available prompt categories."""
+    categories = get_categories()
+    return {"categories": categories}
+
+
+@app.get("/prompts/core")
+async def get_core_prompt_pack(user: Optional[Dict] = Depends(get_optional_user)):
+    """Get the INEVITABLE Core Prompt Pack (named, reusable templates)."""
+    return {"prompts": get_core_prompts()}
+
+
+if __name__ == "__main__":
+    import os
+
+    import uvicorn
+
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8002"))
+    reload = os.getenv("RELOAD", "").lower() in {"1", "true", "yes"}
+
+    uvicorn.run("backend.main:app", host=host, port=port, reload=reload)

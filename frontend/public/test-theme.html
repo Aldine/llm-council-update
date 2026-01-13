@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Test</title>
+    <style>
+        * {
+            --background: 195 45% 8%;
+            --foreground: 300 10% 96%;
+            --primary: 325 60% 50%;
+            --accent: 185 50% 35%;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: system-ui, sans-serif;
+        }
+        .test-box {
+            background-color: hsl(var(--primary));
+            color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .accent-box {
+            background-color: hsl(var(--accent));
+            color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Moody Dark Theme Test</h1>
+    <p>If you can see this text clearly on a DARK TEAL background, the CSS variables are working!</p>
+    
+    <div class="test-box">
+        <h2>Primary Color (Magenta/Pink)</h2>
+        <p>This box should be magenta/pink (325 60% 50%)</p>
+    </div>
+    
+    <div class="accent-box">
+        <h2>Accent Color (Blue/Teal)</h2>
+        <p>This box should be blue/teal (185 50% 35%)</p>
+    </div>
+    
+    <p><strong>Expected colors:</strong></p>
+    <ul>
+        <li>Background: Deep dark teal (almost black with teal tint)</li>
+        <li>Text: Soft white</li>
+        <li>First box: Moody pink/magenta</li>
+        <li>Second box: Blue/teal accent</li>
+    </ul>
+    
+    <p><a href="/" style="color: hsl(var(--primary)); text-decoration: underline;">← Back to main app</a></p>
+</body>
+</html>
