@@ -301,7 +301,61 @@ pip install -e /path/to/confucius-agent
 | **Extension System** | Working | Working ✅ |
 | **Memory Persistence** | Working | Working ✅ |
 | **Ralph Loops** | Working | Working ✅ |
+| **UI Integrity Extension** | Working | Working ✅ |
 | **LLM Clients** | Optional | Partial ⚠️ |
+
+---
+
+## 🎨 UI Integrity Features
+
+The UI Integrity extension adds visual QA and WCAG accessibility checking:
+
+```python
+from confucius_agent.ui_integrity import ChromeDevToolsExtension
+
+# Secure Chrome DevTools integration
+chrome_ext = ChromeDevToolsExtension(
+    chrome_port=9222,
+    chrome_host="127.0.0.1",  # Localhost only for security
+    auto_start_chrome=True
+)
+agent.add_extension(chrome_ext)
+
+# Visual QA workflow
+workflow = """
+Navigate to http://localhost:5173
+Check WCAG contrast ratios for:
+  - Body text
+  - Headings
+  - Links
+  - Buttons
+Report AA and AAA compliance
+Suggest color adjustments if needed
+"""
+result = agent.run(workflow)
+```
+
+**Key Capabilities:**
+- ✅ Secure Chrome launch (localhost-only debugging)
+- ✅ WCAG 2.1 contrast ratio calculation
+- ✅ Color adjustment suggestions
+- ✅ Screenshot capture (full page & viewport)
+- ✅ Accessibility audits
+- ✅ Ralph loop visual regression testing
+
+**Quick Start:**
+```bash
+# Launch Chrome securely
+python scripts/launch_chrome.py start
+
+# Health check
+python scripts/launch_chrome.py check
+
+# Run examples
+python examples/ui_integrity_demo.py
+```
+
+**See also:** [UI_INTEGRITY.md](docs/UI_INTEGRITY.md) for complete documentation
 
 ---
 
@@ -309,15 +363,17 @@ pip install -e /path/to/confucius-agent
 
 ### For New Projects
 1. Copy `.github/copilot-instructions.md` to your repo
-2. Create custom extensions for your domain
-3. Set up memory persistence strategy
-4. Configure Ralph loops for autonomous tasks
+2. Set up Chrome for visual QA (`python scripts/launch_chrome.py start`)
+3. Create custom extensions for your domain
+4. Set up memory persistence strategy
+5. Configure Ralph loops for autonomous tasks
 
 ### For Existing Projects
 1. Refactor manual loops → `RalphOrchestrator`
 2. Replace dict state → `MemoryManager`
 3. Convert helper functions → `Extension` classes
 4. Add cross-session context persistence
+5. Add visual QA workflows with `ChromeDevToolsExtension`
 
 ---
 
@@ -332,14 +388,16 @@ The confucius-agent dependency is properly integrated and ready for production u
 - ✅ Memory scaffolding operational
 - ✅ Ralph loop pattern functional
 - ✅ Extension system available
+- ✅ UI Integrity extension for visual QA & accessibility
 - ✅ Copilot instructions configured
 - ✅ Example code provided
 - ✅ Verification script available
 
-**Recommended:** Start with Pattern 1 (Context Scaffolding) and Pattern 2 (Ralph Loops) for immediate value.
+**Recommended:** Start with Pattern 1 (Context Scaffolding) and Pattern 2 (Ralph Loops) for immediate value. Add UI Integrity extension for visual QA and accessibility testing.
 
 ---
 
 *Last updated: January 13, 2026*  
 *Integration Health: 83.3%*  
-*Status: Production Ready*
+*Status: Production Ready*  
+*New: UI Integrity Extension*

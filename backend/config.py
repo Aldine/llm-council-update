@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # OpenRouter API key
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = os.getenv("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")
 
 # Council members - list of OpenRouter model identifiers
 COUNCIL_MODELS = [

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-chrome-devtools@0.6.0"
+      ],
+      "env": {
+        "CHROME_PORT": "9222"
+      }
+    }
+  },
+  "_comments": {
+    "version_pinning": "Version 0.6.0 is pinned for stability. Update intentionally.",
+    "security": "Chrome should be launched with --remote-debugging-address=127.0.0.1",
+    "mono_repo": "Keep this file beside agent entrypoint for predictable relative paths"
+  }
+}
