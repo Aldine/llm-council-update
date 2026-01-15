@@ -66,6 +66,12 @@ from .llm_clients import (
     MockClient,
 )
 
+from .subagent_extension import (
+    SubagentExtension,
+    SubagentCall,
+    create_subagent_enabled_agent,
+)
+
 # Convenience factory
 def create_agent(
     workspace: str = ".",
